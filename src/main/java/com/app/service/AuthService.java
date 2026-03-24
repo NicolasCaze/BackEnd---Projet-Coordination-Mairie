@@ -3,6 +3,7 @@ package com.app.service;
 import com.app.dto.AuthResponse;
 import com.app.dto.UserDTO;
 import com.app.entity.User;
+import com.app.exception.AuthenticationException;
 import com.app.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,12 +22,12 @@ public class AuthService {
             
             // Vérifier que l'utilisateur est actif
             if (user.getStatut() != User.Statut.ACTIF) {
-                throw new RuntimeException("Compte inactif. Veuillez contacter l'administrateur.");
+                throw new AuthenticationException("Compte inactif. Veuillez contacter l'administrateur.");
             }
             
             // Valider le mot de passe
             if (!userService.validatePassword(password, user.getMot_de_passe())) {
-                throw new RuntimeException("Mot de passe incorrect");
+                throw new AuthenticationException("Mot de passe incorrect");
             }
             
             // Générer les tokens
@@ -41,8 +42,10 @@ public class AuthService {
                     .user(UserDTO.fromEntity(user))
                     .build();
                     
+        } catch (AuthenticationException e) {
+            throw e;
         } catch (RuntimeException e) {
-            throw new RuntimeException("Échec de l'authentification : " + e.getMessage());
+            throw new AuthenticationException("Échec de l'authentification : " + e.getMessage());
         }
     }
 
@@ -50,7 +53,7 @@ public class AuthService {
         try {
             // Valider que c'est bien un refresh token
             if (!jwtUtil.isRefreshToken(refreshToken)) {
-                throw new RuntimeException("Token de refresh invalide");
+                throw new AuthenticationException("Token de refresh invalide");
             }
             
             // Extraire l'email du token
@@ -59,7 +62,7 @@ public class AuthService {
             // Vérifier que l'utilisateur existe et est actif
             User user = userService.findByEmail(email);
             if (user.getStatut() != User.Statut.ACTIF) {
-                throw new RuntimeException("Compte inactif");
+                throw new AuthenticationException("Compte inactif");
             }
             
             // Générer nouveaux tokens
@@ -73,8 +76,10 @@ public class AuthService {
                     .user(UserDTO.fromEntity(user))
                     .build();
                     
+        } catch (AuthenticationException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Échec du rafraîchissement du token : " + e.getMessage());
+            throw new AuthenticationException("Échec du rafraîchissement du token : " + e.getMessage());
         }
     }
 }
