@@ -41,6 +41,16 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User non trouvé avec l'email : " + email));
+    }
+
+    public boolean validatePassword(String rawPassword, String encodedPassword) {
+        // Pour l'instant, comparaison simple. À remplacer par BCrypt plus tard
+        return rawPassword.equals(encodedPassword);
+    }
+
     public void delete(UUID id) {
         findById(id);
         userRepository.deleteById(id);
