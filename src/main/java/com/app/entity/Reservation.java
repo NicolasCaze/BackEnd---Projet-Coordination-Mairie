@@ -45,6 +45,7 @@ public class Reservation {
     private Boolean est_caution;
     private Boolean est_piece_justif;
     private Boolean est_paye;
+    private Boolean est_valide;
 
     @Column(updatable = false)
     private LocalDateTime created_at;

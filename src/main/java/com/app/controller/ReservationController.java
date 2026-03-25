@@ -1,6 +1,7 @@
 package com.app.controller;
 
 import com.app.dto.CreateReservationRequest;
+import com.app.dto.UpdateValidationRequest;
 import com.app.dto.ReservationDTO;
 import com.app.dto.UpdateCautionRequest;
 import com.app.dto.UpdateStatutRequest;
@@ -69,22 +70,22 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}/statut")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
-    public ResponseEntity<ReservationDTO> updateReservationStatut(
+    @PreAuthorize("hasRole('SECRETARY') or hasRole('ADMIN')")
+    public ResponseEntity<ReservationDTO> updateReservationValidation(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateStatutRequest request) {
+            @Valid @RequestBody UpdateValidationRequest request) {
         
-        Reservation updatedReservation = reservationService.updateStatut(id, request.getStatut());
+        Reservation updatedReservation = reservationService.updateEstValide(id, request.getEst_valide());
         return ResponseEntity.ok(ReservationDTO.fromEntity(updatedReservation));
     }
 
     @PatchMapping("/{id}/caution")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
+    @PreAuthorize("hasRole('SECRETARY') or hasRole('ADMIN')")
     public ResponseEntity<ReservationDTO> updateReservationCaution(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateCautionRequest request) {
         
-        Reservation updatedReservation = reservationService.updateStatutCaution(id, request.getStatut_caution());
+        Reservation updatedReservation = reservationService.updateEstCaution(id, request.getEst_caution());
         return ResponseEntity.ok(ReservationDTO.fromEntity(updatedReservation));
     }
 

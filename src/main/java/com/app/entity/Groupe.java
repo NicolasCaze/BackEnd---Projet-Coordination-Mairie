@@ -46,6 +46,6 @@ public class Groupe {
     }
 
     public enum TypeExoneration {
-        ASSO, SOCIAL, MANDAT_ELECTIF
+        ASSO, SOCIAL, MANDAT_ELECTIF, EXONERE_CAUTION
     }
 }

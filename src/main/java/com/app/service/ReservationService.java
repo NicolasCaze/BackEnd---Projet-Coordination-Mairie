@@ -63,6 +63,16 @@ public class ReservationService {
 
         reservation.setStatut(Reservation.Statut.EN_ATTENTE);
         reservation.setStatut_caution(Reservation.StatutCaution.NON_REQUISE);
+        
+        // Logique d'exonération automatique de la caution
+        boolean estExonereCaution = false;
+        if (reservation.getGroupe() != null && reservation.getGroupe().getType_exoneration() != null) {
+            estExonereCaution = reservation.getGroupe().getType_exoneration() == Groupe.TypeExoneration.EXONERE_CAUTION;
+        }
+        
+        reservation.setEst_caution(estExonereCaution);
+        reservation.setEst_valide(false);
+        
         return reservationRepository.save(reservation);
     }
 
@@ -108,9 +118,33 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
-    public Reservation updateStatutCaution(UUID id, Reservation.StatutCaution statutCaution) {
+    public Reservation updateEstCaution(UUID id, Boolean estCaution) {
         Reservation reservation = findById(id);
-        reservation.setStatut_caution(statutCaution);
+        reservation.setEst_caution(estCaution);
+        return reservationRepository.save(reservation);
+    }
+
+    public Reservation updateEstValide(UUID id, Boolean estValide) {
+        Reservation reservation = findById(id);
+        
+        if (estValide) {
+            // Si on valide la réservation, vérifier les conflits
+            List<Reservation> conflits = reservationRepository.findConflictingReservationsExcludingCurrent(
+                    reservation.getBien().getId_bien(),
+                    id,
+                    reservation.getDate_debut(),
+                    reservation.getDate_fin()
+            );
+            
+            if (!conflits.isEmpty()) {
+                throw new ReservationConflictException("Conflit de créneau : ce bien est déjà réservé pour cette période");
+            }
+            reservation.setStatut(Reservation.Statut.CONFIRMEE);
+        } else {
+            reservation.setStatut(Reservation.Statut.ANNULEE);
+        }
+        
+        reservation.setEst_valide(estValide);
         return reservationRepository.save(reservation);
     }
 

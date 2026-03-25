@@ -14,5 +14,5 @@ import lombok.Builder;
 public class UpdateCautionRequest {
     
     @NotNull(message = "Le statut de caution est obligatoire")
-    private Reservation.StatutCaution statut_caution;
+    private Boolean est_caution;
 }
