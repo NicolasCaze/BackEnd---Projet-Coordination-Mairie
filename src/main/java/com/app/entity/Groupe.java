@@ -43,6 +43,6 @@ public class Groupe {
     }
 
     public enum TypeExoneration {
-        AUCUNE, ASSOCIATION, CRITERE_SOCIAL, MANDAT_ELECTIF
+        ASSO, SOCIAL, MANDAT_ELECTIF
     }
 }
