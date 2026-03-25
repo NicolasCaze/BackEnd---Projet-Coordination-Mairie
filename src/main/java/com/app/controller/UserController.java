@@ -1,7 +1,10 @@
 package com.app.controller;
 
 import com.app.dto.UserDTO;
+import com.app.dto.ReservationDTO;
+import com.app.entity.Reservation;
 import com.app.entity.User;
+import com.app.service.ReservationService;
 import com.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+    private final ReservationService reservationService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -85,6 +89,17 @@ public class UserController {
         }
         
         return ResponseEntity.ok(UserDTO.fromEntity(updatedUser));
+    }
+
+    @GetMapping("/{id}/reservations")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
+    public ResponseEntity<List<ReservationDTO>> getUserReservations(@PathVariable UUID id) {
+        userService.findById(id);
+        List<Reservation> reservations = reservationService.findByUser(id);
+        List<ReservationDTO> reservationDTOs = reservations.stream()
+                .map(ReservationDTO::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reservationDTOs);
     }
 
     @DeleteMapping("/{id}")
