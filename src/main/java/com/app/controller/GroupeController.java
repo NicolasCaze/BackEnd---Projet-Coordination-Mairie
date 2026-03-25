@@ -1,11 +1,16 @@
 package com.app.controller;
 
+import com.app.dto.GroupeDTO;
 import com.app.dto.ReservationDTO;
+import com.app.dto.UserGroupeDTO;
 import com.app.entity.Groupe;
 import com.app.entity.Reservation;
+import com.app.entity.UserGroupe;
 import com.app.service.GroupeService;
 import com.app.service.ReservationService;
+import com.app.service.UserGroupeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +26,7 @@ public class GroupeController {
 
     private final GroupeService groupeService;
     private final ReservationService reservationService;
+    private final UserGroupeService userGroupeService;
 
     @GetMapping("/{id}/reservations")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
@@ -66,5 +72,39 @@ public class GroupeController {
     public ResponseEntity<Void> deleteGroupe(@PathVariable UUID id) {
         groupeService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/membres/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
+    public ResponseEntity<UserGroupeDTO> addMembre(@PathVariable UUID id, @PathVariable UUID userId) {
+        UserGroupe userGroupe = userGroupeService.addMembre(id, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserGroupeDTO.fromEntity(userGroupe));
+    }
+
+    @DeleteMapping("/{id}/membres/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
+    public ResponseEntity<Void> removeMembre(@PathVariable UUID id, @PathVariable UUID userId) {
+        userGroupeService.removeMembre(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/membres/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
+    public ResponseEntity<UserGroupeDTO> updateMembreStatus(
+            @PathVariable UUID id, 
+            @PathVariable UUID userId,
+            @RequestBody UserGroupeDTO userGroupeDTO) {
+        UserGroupe userGroupe = userGroupeService.updateStatut(id, userId, userGroupeDTO.getStatus());
+        return ResponseEntity.ok(UserGroupeDTO.fromEntity(userGroupe));
+    }
+
+    @GetMapping("/{id}/membres")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
+    public ResponseEntity<List<UserGroupeDTO>> getGroupeMembres(@PathVariable UUID id) {
+        List<UserGroupe> membres = userGroupeService.findMembresByGroupe(id);
+        List<UserGroupeDTO> membreDTOs = membres.stream()
+                .map(UserGroupeDTO::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(membreDTOs);
     }
 }

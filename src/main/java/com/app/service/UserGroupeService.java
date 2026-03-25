@@ -17,13 +17,13 @@ public class UserGroupeService {
     private final GroupeService groupeService;
 
     public List<UserGroupe> findMembresByGroupe(UUID id_groupe) {
-        groupeService.findById(id_groupe); // vérifie que le groupe existe
-        return userGroupeRepository.findByIdGroupe(id_groupe);
+        groupeService.findById(id_groupe);
+        return userGroupeRepository.findByGroupeIdGroupe(id_groupe);
     }
 
     public List<UserGroupe> findGroupesByUser(UUID id_user) {
-        userService.findById(id_user); // vérifie que le user existe
-        return userGroupeRepository.findByIdUser(id_user);
+        userService.findById(id_user);
+        return userGroupeRepository.findByUserIdUser(id_user);
     }
 
     public UserGroupe addMembre(UUID id_groupe, UUID id_user) {
@@ -36,18 +36,19 @@ public class UserGroupeService {
         }
 
         UserGroupe userGroupe = UserGroupe.builder()
-                .id_user(id_user)
-                .id_groupe(id_groupe)
-                .statut(UserGroupe.Statut.EN_ATTENTE)
+                .id(compositeId)
+                .user(userService.findById(id_user))
+                .groupe(groupeService.findById(id_groupe))
+                .status(UserGroupe.Status.ACTIF)
                 .build();
         return userGroupeRepository.save(userGroupe);
     }
 
-    public UserGroupe updateStatut(UUID id_groupe, UUID id_user, UserGroupe.Statut statut) {
+    public UserGroupe updateStatut(UUID id_groupe, UUID id_user, UserGroupe.Status status) {
         UserGroupeId compositeId = new UserGroupeId(id_user, id_groupe);
         UserGroupe userGroupe = userGroupeRepository.findById(compositeId)
                 .orElseThrow(() -> new RuntimeException("Membre non trouvé dans ce groupe"));
-        userGroupe.setStatut(statut);
+        userGroupe.setStatus(status);
         return userGroupeRepository.save(userGroupe);
     }
 

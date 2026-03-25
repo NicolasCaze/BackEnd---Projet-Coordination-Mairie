@@ -22,11 +22,27 @@ public class Groupe {
 
     private String description;
 
-    @Column(updatable = false)
-    private LocalDateTime created_at;
+    @Enumerated(EnumType.STRING)
+    private TypeGroupe type_groupe;
+
+    @Enumerated(EnumType.STRING)
+    private TypeExoneration type_exoneration;
+
+    private Integer niveau_tarif;
+
+    @Column(name = "creer_le", updatable = false)
+    private LocalDateTime creer_le;
 
     @PrePersist
     public void prePersist() {
-        this.created_at = LocalDateTime.now();
+        this.creer_le = LocalDateTime.now();
+    }
+
+    public enum TypeGroupe {
+        ASSOCIATION, CONSEIL_MUNICIPAL, ENTREPRISE, PARTICULIER
+    }
+
+    public enum TypeExoneration {
+        AUCUNE, ASSOCIATION, CRITERE_SOCIAL, MANDAT_ELECTIF
     }
 }

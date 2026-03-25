@@ -31,16 +31,18 @@ public class GroupeService {
         groupe.setNom(updated.getNom());
         groupe.setDescription(updated.getDescription());
         groupe.setType_groupe(updated.getType_groupe());
-        groupe.setIs_conseil_municipal(updated.getIs_conseil_municipal());
-        groupe.setExo_association(updated.getExo_association());
-        groupe.setExo_critere_social(updated.getExo_critere_social());
-        groupe.setExo_mandat_electif(updated.getExo_mandat_electif());
+        groupe.setType_exoneration(updated.getType_exoneration());
         groupe.setNiveau_tarif(updated.getNiveau_tarif());
         return groupeRepository.save(groupe);
     }
 
     public void delete(UUID id) {
-        findById(id);
+        Groupe groupe = findById(id);
+        
+        if (groupe.getType_groupe() == Groupe.TypeGroupe.CONSEIL_MUNICIPAL) {
+            throw new RuntimeException("Le groupe CONSEIL_MUNICIPAL ne peut pas être supprimé");
+        }
+        
         groupeRepository.deleteById(id);
     }
 }
