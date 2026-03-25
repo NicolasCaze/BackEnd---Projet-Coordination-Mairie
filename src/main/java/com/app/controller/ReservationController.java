@@ -6,6 +6,7 @@ import com.app.dto.ReservationDTO;
 import com.app.dto.UpdateCautionRequest;
 import com.app.dto.UpdateStatutRequest;
 import com.app.entity.Bien;
+import com.app.entity.Delegation;
 import com.app.entity.Groupe;
 import com.app.entity.Reservation;
 import com.app.entity.User;
@@ -13,6 +14,21 @@ import com.app.entity.UserGroupe;
 import com.app.entity.UserGroupeId;
 import com.app.service.AuthService;
 import com.app.service.BienService;
+import com.app.service.DelegationPermissionService;
+import com.app.service.GroupeService;
+import com.app.service.ReservationService;
+import com.app.service.UserGroupeService;
+import com.app.service.UserService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import com.app.service.GroupeService;
 import com.app.service.ReservationService;
 import com.app.service.UserGroupeService;
@@ -38,6 +54,7 @@ public class ReservationController {
     private final GroupeService groupeService;
     private final BienService bienService;
     private final UserGroupeService userGroupeService;
+    private final DelegationPermissionService delegationPermissionService;
 
     @PostMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('MODERATEUR')")
@@ -70,20 +87,32 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}/statut")
-    @PreAuthorize("hasRole('SECRETARY') or hasRole('ADMIN')")
     public ResponseEntity<ReservationDTO> updateReservationValidation(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateValidationRequest request) {
+            @Valid @RequestBody UpdateValidationRequest request,
+            Authentication authentication) {
+        
+        delegationPermissionService.checkPermissionOrDelegatedPermission(
+            authentication, 
+            Delegation.Permission.UPDATE_RESERVATION_VALIDATION,
+            "Vous n'avez pas la permission de valider une réservation"
+        );
         
         Reservation updatedReservation = reservationService.updateEstValide(id, request.getEst_valide());
         return ResponseEntity.ok(ReservationDTO.fromEntity(updatedReservation));
     }
 
     @PatchMapping("/{id}/caution")
-    @PreAuthorize("hasRole('SECRETARY') or hasRole('ADMIN')")
     public ResponseEntity<ReservationDTO> updateReservationCaution(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateCautionRequest request) {
+            @Valid @RequestBody UpdateCautionRequest request,
+            Authentication authentication) {
+        
+        delegationPermissionService.checkPermissionOrDelegatedPermission(
+            authentication, 
+            Delegation.Permission.UPDATE_RESERVATION_CAUTION,
+            "Vous n'avez pas la permission de modifier la caution d'une réservation"
+        );
         
         Reservation updatedReservation = reservationService.updateEstCaution(id, request.getEst_caution());
         return ResponseEntity.ok(ReservationDTO.fromEntity(updatedReservation));
@@ -129,8 +158,12 @@ public class ReservationController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteReservation(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteReservation(@PathVariable UUID id, Authentication authentication) {
+        delegationPermissionService.checkPermissionOrDelegatedPermission(
+            authentication, 
+            Delegation.Permission.DELETE_RESERVATION,
+            "Vous n'avez pas la permission de supprimer une réservation"
+        );
         reservationService.delete(id);
         return ResponseEntity.noContent().build();
     }

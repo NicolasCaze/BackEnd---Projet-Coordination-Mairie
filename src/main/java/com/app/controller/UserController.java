@@ -4,12 +4,15 @@ import com.app.dto.UserDTO;
 import com.app.dto.ReservationDTO;
 import com.app.entity.Reservation;
 import com.app.entity.User;
+import com.app.entity.Delegation;
+import com.app.service.DelegationPermissionService;
 import com.app.service.ReservationService;
 import com.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -24,6 +27,7 @@ public class UserController {
 
     private final UserService userService;
     private final ReservationService reservationService;
+    private final DelegationPermissionService delegationPermissionService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -103,17 +107,27 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id, Authentication authentication) {
+        delegationPermissionService.checkPermissionOrDelegatedPermission(
+            authentication, 
+            Delegation.Permission.DELETE_USER,
+            "Vous n'avez pas la permission de supprimer un utilisateur"
+        );
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/statut")
-    @PreAuthorize("hasRole('SECRETARY') or hasRole('ADMIN')")
     public ResponseEntity<UserDTO> updateUserStatut(
             @PathVariable UUID id,
-            @RequestBody User.Statut newStatut) {
+            @RequestBody User.Statut newStatut,
+            Authentication authentication) {
+        
+        delegationPermissionService.checkPermissionOrDelegatedPermission(
+            authentication, 
+            Delegation.Permission.UPDATE_USER_STATUT,
+            "Vous n'avez pas la permission de modifier le statut d'un utilisateur"
+        );
         User updatedUser = userService.updateStatut(id, newStatut);
         return ResponseEntity.ok(UserDTO.fromEntity(updatedUser));
     }

@@ -4,9 +4,11 @@ import com.app.dto.GroupeDTO;
 import com.app.dto.RequiredDocumentResponse;
 import com.app.dto.ReservationDTO;
 import com.app.dto.UserGroupeDTO;
+import com.app.entity.Delegation;
 import com.app.entity.Groupe;
 import com.app.entity.Reservation;
 import com.app.entity.UserGroupe;
+import com.app.service.DelegationPermissionService;
 import com.app.service.DocumentRuleService;
 import com.app.service.GroupeService;
 import com.app.service.ReservationService;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +33,7 @@ public class GroupeController {
     private final ReservationService reservationService;
     private final UserGroupeService userGroupeService;
     private final DocumentRuleService documentRuleService;
+    private final DelegationPermissionService delegationPermissionService;
 
     @GetMapping("/{id}/reservations")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
@@ -57,8 +61,12 @@ public class GroupeController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
-    public ResponseEntity<Groupe> createGroupe(@RequestBody Groupe groupe) {
+    public ResponseEntity<Groupe> createGroupe(@RequestBody Groupe groupe, Authentication authentication) {
+        delegationPermissionService.checkPermissionOrDelegatedPermission(
+            authentication, 
+            Delegation.Permission.CREATE_GROUPE,
+            "Vous n'avez pas la permission de créer un groupe"
+        );
         Groupe createdGroupe = groupeService.create(groupe);
         return ResponseEntity.status(201).body(createdGroupe);
     }
@@ -71,8 +79,12 @@ public class GroupeController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteGroupe(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteGroupe(@PathVariable UUID id, Authentication authentication) {
+        delegationPermissionService.checkPermissionOrDelegatedPermission(
+            authentication, 
+            Delegation.Permission.DELETE_GROUPE,
+            "Vous n'avez pas la permission de supprimer un groupe"
+        );
         groupeService.delete(id);
         return ResponseEntity.noContent().build();
     }
