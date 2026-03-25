@@ -2,8 +2,10 @@ package com.app.controller;
 
 import com.app.dto.AuthRequest;
 import com.app.dto.AuthResponse;
+import com.app.dto.RegisterRequest;
 import com.app.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +26,27 @@ public class AuthController {
                     authRequest.getMot_de_passe()
             );
             return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        try {
+            AuthResponse response = authService.register(registerRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).build();
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            authService.logout(token);
+            return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).build();
         }

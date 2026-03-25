@@ -1,12 +1,18 @@
 package com.app.service;
 
 import com.app.dto.AuthResponse;
+import com.app.dto.RegisterRequest;
 import com.app.dto.UserDTO;
+import com.app.entity.TokenBlacklist;
 import com.app.entity.User;
 import com.app.exception.AuthenticationException;
+import com.app.repository.TokenBlacklistRepository;
 import com.app.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +20,7 @@ public class AuthService {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
     public AuthResponse authenticate(String email, String password) {
         try {
@@ -81,5 +88,67 @@ public class AuthService {
         } catch (Exception e) {
             throw new AuthenticationException("Échec du rafraîchissement du token : " + e.getMessage());
         }
+    }
+
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        try {
+            if (userService.findAll().stream()
+                    .anyMatch(u -> u.getEmail().equalsIgnoreCase(request.getEmail()))) {
+                throw new AuthenticationException("Email déjà utilisé");
+            }
+            
+            String hashedPassword = userService.hashPassword(request.getMot_de_passe());
+            
+            User user = User.builder()
+                    .nom(request.getNom())
+                    .prenom(request.getPrenom())
+                    .email(request.getEmail())
+                    .mot_de_passe(hashedPassword)
+                    .telephone(request.getTelephone())
+                    .is_resident(request.getIs_resident() != null ? request.getIs_resident() : false)
+                    .role(User.Role.USER)
+                    .statut(User.Statut.ACTIF)
+                    .build();
+            
+            User savedUser = userService.create(user);
+            
+            String token = jwtUtil.generateToken(savedUser.getEmail());
+            String refreshToken = jwtUtil.generateRefreshToken(savedUser.getEmail());
+            
+            return AuthResponse.builder()
+                    .token(token)
+                    .refreshToken(refreshToken)
+                    .expiresIn(jwtUtil.getExpiration())
+                    .user(UserDTO.fromEntity(savedUser))
+                    .build();
+                    
+        } catch (AuthenticationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuthenticationException("Échec de l'inscription : " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void logout(String token) {
+        try {
+            LocalDateTime expiresAt = LocalDateTime.now()
+                    .plusSeconds(jwtUtil.getExpiration());
+            
+            TokenBlacklist blacklistedToken = TokenBlacklist.builder()
+                    .token(token)
+                    .expires_at(expiresAt)
+                    .build();
+            
+            tokenBlacklistRepository.save(blacklistedToken);
+            
+        } catch (Exception e) {
+            throw new AuthenticationException("Échec de la déconnexion : " + e.getMessage());
+        }
+    }
+
+    public boolean isTokenBlacklisted(String token) {
+        return tokenBlacklistRepository.existsByToken(token);
     }
 }

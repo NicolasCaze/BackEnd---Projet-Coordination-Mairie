@@ -3,6 +3,7 @@ package com.app.service;
 import com.app.entity.User;
 import com.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -47,8 +49,11 @@ public class UserService {
     }
 
     public boolean validatePassword(String rawPassword, String encodedPassword) {
-        // Pour l'instant, comparaison simple. À remplacer par BCrypt plus tard
-        return rawPassword.equals(encodedPassword);
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    public String hashPassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
     }
 
     public void delete(UUID id) {
