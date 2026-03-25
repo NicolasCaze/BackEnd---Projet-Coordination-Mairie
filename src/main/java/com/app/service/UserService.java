@@ -80,4 +80,19 @@ public class UserService {
         findById(id);
         userRepository.deleteById(id);
     }
+
+    public User updateStatut(UUID id, User.Statut newStatut) {
+        User user = findById(id);
+        
+        if (user.getStatut() != User.Statut.PENDING) {
+            throw new RuntimeException("Seuls les comptes en statut PENDING peuvent être validés");
+        }
+        
+        if (newStatut != User.Statut.ACTIVE && newStatut != User.Statut.REJECTED) {
+            throw new RuntimeException("Le nouveau statut doit être ACTIVE ou REJECTED");
+        }
+        
+        user.setStatut(newStatut);
+        return userRepository.save(user);
+    }
 }

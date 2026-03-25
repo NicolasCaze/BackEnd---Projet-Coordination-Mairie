@@ -44,10 +44,10 @@ public class User {
     }
 
     public enum Role {
-        ADMIN, USER, MODERATEUR, TUTORED
+        ADMIN, USER, MODERATEUR, TUTORED, SECRETARY
     }
 
     public enum Statut {
-        ACTIF, INACTIF, SUSPENDU
+        PENDING, ACTIVE, REJECTED, ACTIF, INACTIF, SUSPENDU
     }
 }

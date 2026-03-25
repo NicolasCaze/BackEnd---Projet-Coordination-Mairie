@@ -14,6 +14,7 @@
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/GroupeService.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/exception/ReservationConflictException.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/ReservationDTO.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/DocumentRule.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/CatBienService.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/controller/FileUploadController.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/BienDTO.java
@@ -21,10 +22,13 @@
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/UserGroupeService.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/controller/BienController.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/PieceJustificative.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/DocumentRuleRepository.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/FileUploadService.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/RequiredDocumentResponse.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/exception/GlobalExceptionHandler.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/AttachmentService.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/UserRepository.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/DocumentRuleService.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/UserGroupeId.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/CreateReservationRequest.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/Groupe.java
@@ -35,6 +39,7 @@
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/config/OpenApiConfig.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/AuthResponse.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/PieceJustificativeRepository.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/controller/DocumentRuleController.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/BienRepository.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/UserService.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/CatBienRepository.java
@@ -42,8 +47,10 @@
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/ReservationService.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/UpdateCautionRequest.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/Reservation.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/DocumentRuleRequest.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/UserGroupeRepository.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/Bien.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/DocumentRuleResponse.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/util/JwtUtil.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/BienService.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/MairieApplication.java

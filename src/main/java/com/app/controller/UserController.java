@@ -108,4 +108,13 @@ public class UserController {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/statut")
+    @PreAuthorize("hasRole('SECRETARY') or hasRole('ADMIN')")
+    public ResponseEntity<UserDTO> updateUserStatut(
+            @PathVariable UUID id,
+            @RequestBody User.Statut newStatut) {
+        User updatedUser = userService.updateStatut(id, newStatut);
+        return ResponseEntity.ok(UserDTO.fromEntity(updatedUser));
+    }
 }
