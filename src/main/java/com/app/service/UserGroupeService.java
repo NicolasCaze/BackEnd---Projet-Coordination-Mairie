@@ -59,4 +59,11 @@ public class UserGroupeService {
         }
         userGroupeRepository.deleteById(compositeId);
     }
+
+    public boolean isUserActiveMember(UUID id_user, UUID id_groupe) {
+        UserGroupeId compositeId = new UserGroupeId(id_user, id_groupe);
+        return userGroupeRepository.findById(compositeId)
+                .map(userGroupe -> userGroupe.getStatus() == UserGroupe.Status.ACTIF)
+                .orElse(false);
+    }
 }

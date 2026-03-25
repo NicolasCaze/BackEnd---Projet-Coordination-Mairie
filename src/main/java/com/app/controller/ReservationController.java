@@ -8,9 +8,13 @@ import com.app.entity.Bien;
 import com.app.entity.Groupe;
 import com.app.entity.Reservation;
 import com.app.entity.User;
+import com.app.entity.UserGroupe;
+import com.app.entity.UserGroupeId;
+import com.app.service.AuthService;
 import com.app.service.BienService;
 import com.app.service.GroupeService;
 import com.app.service.ReservationService;
+import com.app.service.UserGroupeService;
 import com.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,6 +36,7 @@ public class ReservationController {
     private final UserService userService;
     private final GroupeService groupeService;
     private final BienService bienService;
+    private final UserGroupeService userGroupeService;
 
     @PostMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('MODERATEUR')")
@@ -42,6 +47,12 @@ public class ReservationController {
         Groupe groupe = null;
         if (request.getId_groupe() != null) {
             groupe = groupeService.findById(request.getId_groupe());
+            
+            // Vérifier que l'utilisateur est un membre actif du groupe
+            if (!userGroupeService.isUserActiveMember(request.getId_user(), request.getId_groupe())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(null);
+            }
         }
 
         Reservation reservation = Reservation.builder()
