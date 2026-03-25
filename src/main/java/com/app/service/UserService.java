@@ -38,8 +38,28 @@ public class UserService {
         user.setEmail(updated.getEmail());
         user.setTelephone(updated.getTelephone());
         user.setIs_resident(updated.getIs_resident());
+        user.setIs_tutored(updated.getIs_tutored());
+        user.setNiveau_tarif(updated.getNiveau_tarif());
         user.setRole(updated.getRole());
         user.setStatut(updated.getStatut());
+        return userRepository.save(user);
+    }
+
+    public User updateWithoutRoleChange(UUID id, User updated, UUID currentUserId) {
+        User user = findById(id);
+        user.setNom(updated.getNom());
+        user.setPrenom(updated.getPrenom());
+        user.setEmail(updated.getEmail());
+        user.setTelephone(updated.getTelephone());
+        user.setIs_resident(updated.getIs_resident());
+        user.setIs_tutored(updated.getIs_tutored());
+        user.setNiveau_tarif(updated.getNiveau_tarif());
+        user.setStatut(updated.getStatut());
+        
+        if (!id.equals(currentUserId)) {
+            user.setRole(updated.getRole());
+        }
+        
         return userRepository.save(user);
     }
 

@@ -49,6 +49,7 @@ public class UserController {
                 .telephone(userDTO.getTelephone())
                 .is_resident(userDTO.getIs_resident())
                 .is_tutored(userDTO.getIs_tutored())
+                .niveau_tarif(userDTO.getNiveau_tarif())
                 .role(userDTO.getRole())
                 .statut(userDTO.getStatut())
                 .build();
@@ -59,8 +60,10 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable UUID id, @Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(
+            @PathVariable UUID id, 
+            @Valid @RequestBody UserDTO userDTO,
+            @RequestHeader(value = "X-User-Id", required = false) UUID currentUserId) {
         User user = User.builder()
                 .nom(userDTO.getNom())
                 .prenom(userDTO.getPrenom())
@@ -69,11 +72,18 @@ public class UserController {
                 .telephone(userDTO.getTelephone())
                 .is_resident(userDTO.getIs_resident())
                 .is_tutored(userDTO.getIs_tutored())
+                .niveau_tarif(userDTO.getNiveau_tarif())
                 .role(userDTO.getRole())
                 .statut(userDTO.getStatut())
                 .build();
         
-        User updatedUser = userService.update(id, user);
+        User updatedUser;
+        if (currentUserId != null) {
+            updatedUser = userService.updateWithoutRoleChange(id, user, currentUserId);
+        } else {
+            updatedUser = userService.update(id, user);
+        }
+        
         return ResponseEntity.ok(UserDTO.fromEntity(updatedUser));
     }
 

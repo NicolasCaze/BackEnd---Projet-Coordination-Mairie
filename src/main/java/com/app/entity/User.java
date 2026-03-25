@@ -27,6 +27,7 @@ public class User {
     private String telephone;
     private Boolean is_resident;
     private Boolean is_tutored;
+    private Integer niveau_tarif;
 
     @Enumerated(EnumType.STRING)
     private Role role;

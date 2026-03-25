@@ -22,6 +22,7 @@ public class UserDTO {
     private String telephone;
     private Boolean is_resident;
     private Boolean is_tutored;
+    private Integer niveau_tarif;
     private User.Role role;
     private User.Statut statut;
     
@@ -34,6 +35,7 @@ public class UserDTO {
                 .telephone(user.getTelephone())
                 .is_resident(user.getIs_resident())
                 .is_tutored(user.getIs_tutored())
+                .niveau_tarif(user.getNiveau_tarif())
                 .role(user.getRole())
                 .statut(user.getStatut())
                 .build();

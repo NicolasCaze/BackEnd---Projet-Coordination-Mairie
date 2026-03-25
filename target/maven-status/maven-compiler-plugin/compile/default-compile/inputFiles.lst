@@ -7,6 +7,7 @@
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/util/JwtUtil.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/BienService.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/AuthResponse.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/controller/UserController.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/MairieApplication.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/UserDTO.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/User.java
