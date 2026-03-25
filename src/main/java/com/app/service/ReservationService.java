@@ -1,5 +1,6 @@
 package com.app.service;
 
+import com.app.entity.Groupe;
 import com.app.entity.Reservation;
 import com.app.exception.ReservationConflictException;
 import com.app.repository.ReservationRepository;

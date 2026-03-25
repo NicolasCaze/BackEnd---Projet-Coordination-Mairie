@@ -1,6 +1,7 @@
 package com.app.service;
 
 import com.app.entity.User;
+import com.app.exception.LastAdminException;
 import com.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,6 +34,14 @@ public class UserService {
 
     public User update(UUID id, User updated) {
         User user = findById(id);
+        
+        if (user.getRole() == User.Role.ADMIN && updated.getRole() != User.Role.ADMIN) {
+            long adminCount = userRepository.countByRole(User.Role.ADMIN);
+            if (adminCount <= 1) {
+                throw new LastAdminException("cannot remove last admin");
+            }
+        }
+        
         user.setNom(updated.getNom());
         user.setPrenom(updated.getPrenom());
         user.setEmail(updated.getEmail());
@@ -57,6 +66,12 @@ public class UserService {
         user.setStatut(updated.getStatut());
         
         if (!id.equals(currentUserId)) {
+            if (user.getRole() == User.Role.ADMIN && updated.getRole() != User.Role.ADMIN) {
+                long adminCount = userRepository.countByRole(User.Role.ADMIN);
+                if (adminCount <= 1) {
+                    throw new LastAdminException("cannot remove last admin");
+                }
+            }
             user.setRole(updated.getRole());
         }
         
@@ -77,7 +92,15 @@ public class UserService {
     }
 
     public void delete(UUID id) {
-        findById(id);
+        User user = findById(id);
+        
+        if (user.getRole() == User.Role.ADMIN) {
+            long adminCount = userRepository.countByRole(User.Role.ADMIN);
+            if (adminCount <= 1) {
+                throw new LastAdminException("cannot remove last admin");
+            }
+        }
+        
         userRepository.deleteById(id);
     }
 
