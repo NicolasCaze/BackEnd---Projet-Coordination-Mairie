@@ -1,10 +1,13 @@
 package com.app.controller;
 
 import com.app.dto.BienDTO;
+import com.app.dto.ReservationDTO;
 import com.app.entity.Bien;
 import com.app.entity.CatBien;
+import com.app.entity.Reservation;
 import com.app.service.BienService;
 import com.app.service.CatBienService;
+import com.app.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +30,7 @@ public class BienController {
 
     private final BienService bienService;
     private final CatBienService catBienService;
+    private final ReservationService reservationService;
 
     @GetMapping
     public ResponseEntity<Page<BienDTO>> getAllBiens(
@@ -114,5 +118,15 @@ public class BienController {
     public ResponseEntity<Void> softDeleteBien(@PathVariable UUID id) {
         bienService.softDelete(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/reservations")
+    public ResponseEntity<List<ReservationDTO>> getReservationsByBien(@PathVariable UUID id) {
+        bienService.findById(id);
+        List<Reservation> reservations = reservationService.findByBien(id);
+        List<ReservationDTO> reservationDTOs = reservations.stream()
+                .map(ReservationDTO::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reservationDTOs);
     }
 }

@@ -1,6 +1,7 @@
 package com.app.service;
 
 import com.app.entity.Reservation;
+import com.app.exception.ReservationConflictException;
 import com.app.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,17 @@ public class ReservationService {
             throw new RuntimeException("La date de début doit être avant la date de fin");
         }
 
+        // Vérification des conflits de créneau
+        List<Reservation> conflits = reservationRepository.findConflictingReservations(
+                reservation.getBien().getId_bien(),
+                reservation.getDate_debut(),
+                reservation.getDate_fin()
+        );
+        
+        if (!conflits.isEmpty()) {
+            throw new ReservationConflictException("Conflit de créneau : ce bien est déjà réservé pour cette période");
+        }
+
         reservation.setStatut(Reservation.Statut.EN_ATTENTE);
         reservation.setStatut_caution(Reservation.StatutCaution.NON_REQUISE);
         return reservationRepository.save(reservation);
@@ -56,6 +68,19 @@ public class ReservationService {
 
     public Reservation update(UUID id, Reservation updated) {
         Reservation reservation = findById(id);
+        
+        // Vérification des conflits de créneau (en excluant la réservation actuelle)
+        List<Reservation> conflits = reservationRepository.findConflictingReservationsExcludingCurrent(
+                reservation.getBien().getId_bien(),
+                id,
+                updated.getDate_debut(),
+                updated.getDate_fin()
+        );
+        
+        if (!conflits.isEmpty()) {
+            throw new ReservationConflictException("Conflit de créneau : ce bien est déjà réservé pour cette période");
+        }
+        
         reservation.setDate_debut(updated.getDate_debut());
         reservation.setDate_fin(updated.getDate_fin());
         reservation.setGroupe(updated.getGroupe());
@@ -64,6 +89,21 @@ public class ReservationService {
 
     public Reservation updateStatut(UUID id, Reservation.Statut statut) {
         Reservation reservation = findById(id);
+        
+        // Si on confirme une réservation, vérifier les conflits
+        if (statut == Reservation.Statut.CONFIRMEE && reservation.getStatut() != Reservation.Statut.CONFIRMEE) {
+            List<Reservation> conflits = reservationRepository.findConflictingReservationsExcludingCurrent(
+                    reservation.getBien().getId_bien(),
+                    id,
+                    reservation.getDate_debut(),
+                    reservation.getDate_fin()
+            );
+            
+            if (!conflits.isEmpty()) {
+                throw new ReservationConflictException("Conflit de créneau : ce bien est déjà réservé pour cette période");
+            }
+        }
+        
         reservation.setStatut(statut);
         return reservationRepository.save(reservation);
     }
