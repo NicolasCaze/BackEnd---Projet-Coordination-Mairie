@@ -3,6 +3,7 @@ package com.app.controller;
 import com.app.dto.AuthRequest;
 import com.app.dto.AuthResponse;
 import com.app.dto.RegisterRequest;
+import com.app.exception.AuthenticationException;
 import com.app.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,8 +27,11 @@ public class AuthController {
                     authRequest.getMot_de_passe()
             );
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(401).build();
+        } catch (AuthenticationException e) {
+            if (e.getMessage().contains("comptes sous tutelle")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 

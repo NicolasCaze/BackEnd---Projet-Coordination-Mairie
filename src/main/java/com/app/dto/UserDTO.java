@@ -18,8 +18,10 @@ public class UserDTO {
     private String nom;
     private String prenom;
     private String email;
+    private String mot_de_passe;
     private String telephone;
     private Boolean is_resident;
+    private Boolean is_tutored;
     private User.Role role;
     private User.Statut statut;
     
@@ -31,6 +33,7 @@ public class UserDTO {
                 .email(user.getEmail())
                 .telephone(user.getTelephone())
                 .is_resident(user.getIs_resident())
+                .is_tutored(user.getIs_tutored())
                 .role(user.getRole())
                 .statut(user.getStatut())
                 .build();

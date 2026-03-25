@@ -27,6 +27,11 @@ public class AuthService {
             // Récupérer l'utilisateur
             User user = userService.findByEmail(email);
             
+            // Vérifier que l'utilisateur n'est pas sous tutelle
+            if (user.getIs_tutored() != null && user.getIs_tutored()) {
+                throw new AuthenticationException("Accès refusé : Les comptes sous tutelle ne peuvent pas se connecter");
+            }
+            
             // Vérifier que l'utilisateur est actif
             if (user.getStatut() != User.Statut.ACTIF) {
                 throw new AuthenticationException("Compte inactif. Veuillez contacter l'administrateur.");

@@ -26,6 +26,7 @@ public class User {
     private String mot_de_passe;
     private String telephone;
     private Boolean is_resident;
+    private Boolean is_tutored;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -42,7 +43,7 @@ public class User {
     }
 
     public enum Role {
-        ADMIN, USER, MODERATEUR
+        ADMIN, USER, MODERATEUR, TUTORED
     }
 
     public enum Statut {
