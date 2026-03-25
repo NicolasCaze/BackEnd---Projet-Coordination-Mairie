@@ -50,6 +50,7 @@
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/DocumentRuleRequest.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/UserGroupeRepository.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/Bien.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/config/DataSeeder.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/DocumentRuleResponse.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/util/JwtUtil.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/BienService.java
@@ -60,3 +61,4 @@
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/TokenBlacklist.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/CatBien.java
 /Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/exception/AuthenticationException.java
+/Users/yevheniibondarenko/projet-coordination-mairie/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/UpdateValidationRequest.java
