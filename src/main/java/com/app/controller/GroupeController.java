@@ -1,11 +1,13 @@
 package com.app.controller;
 
 import com.app.dto.GroupeDTO;
+import com.app.dto.RequiredDocumentResponse;
 import com.app.dto.ReservationDTO;
 import com.app.dto.UserGroupeDTO;
 import com.app.entity.Groupe;
 import com.app.entity.Reservation;
 import com.app.entity.UserGroupe;
+import com.app.service.DocumentRuleService;
 import com.app.service.GroupeService;
 import com.app.service.ReservationService;
 import com.app.service.UserGroupeService;
@@ -27,6 +29,7 @@ public class GroupeController {
     private final GroupeService groupeService;
     private final ReservationService reservationService;
     private final UserGroupeService userGroupeService;
+    private final DocumentRuleService documentRuleService;
 
     @GetMapping("/{id}/reservations")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
@@ -106,5 +109,12 @@ public class GroupeController {
                 .map(UserGroupeDTO::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(membreDTOs);
+    }
+
+    @GetMapping("/{id}/required-documents")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
+    public ResponseEntity<RequiredDocumentResponse> getRequiredDocuments(@PathVariable UUID id) {
+        RequiredDocumentResponse response = documentRuleService.getRequiredDocumentsForGroup(id);
+        return ResponseEntity.ok(response);
     }
 }
