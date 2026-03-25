@@ -42,6 +42,10 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private StatutCaution statut_caution;
 
+    private Boolean est_caution;
+    private Boolean est_piece_justif;
+    private Boolean est_paye;
+
     @Column(updatable = false)
     private LocalDateTime created_at;
 

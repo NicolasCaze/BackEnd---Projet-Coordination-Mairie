@@ -32,6 +32,9 @@ public class Bien {
     @JoinColumn(name = "id_cat_bien")
     private CatBien catBien;
 
+    @OneToOne(mappedBy = "bien", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Tarif tarif;
+
     @PrePersist
     public void prePersist() {
         this.creerLe = LocalDateTime.now();

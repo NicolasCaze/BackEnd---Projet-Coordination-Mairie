@@ -28,6 +28,9 @@ public class Groupe {
     @Enumerated(EnumType.STRING)
     private TypeExoneration type_exoneration;
 
+    private Boolean est_caution;
+    private Boolean est_piece_justif;
+    private Boolean est_paye;
     private Integer niveau_tarif;
 
     @Column(name = "creer_le", updatable = false)
