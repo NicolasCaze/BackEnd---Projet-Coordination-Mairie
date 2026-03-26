@@ -1,5 +1,6 @@
 package com.app.controller;
 
+import com.app.annotation.Audited;
 import com.app.dto.UserDTO;
 import com.app.dto.ReservationDTO;
 import com.app.entity.Reservation;
@@ -118,6 +119,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/statut")
+    @Audited(action = "VALIDATION_COMPTE")
     public ResponseEntity<UserDTO> updateUserStatut(
             @PathVariable UUID id,
             @RequestBody User.Statut newStatut,

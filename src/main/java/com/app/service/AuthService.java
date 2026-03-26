@@ -1,5 +1,6 @@
 package com.app.service;
 
+import com.app.annotation.Audited;
 import com.app.dto.AuthResponse;
 import com.app.dto.RegisterRequest;
 import com.app.dto.UserDTO;
@@ -22,6 +23,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final TokenBlacklistRepository tokenBlacklistRepository;
 
+    @Audited(action = "LOGIN")
     public AuthResponse authenticate(String email, String password) {
         try {
             // Récupérer l'utilisateur

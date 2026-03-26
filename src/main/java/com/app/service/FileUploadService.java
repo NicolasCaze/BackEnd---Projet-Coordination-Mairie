@@ -1,5 +1,6 @@
 package com.app.service;
 
+import com.app.annotation.Audited;
 import com.app.entity.PieceJustificative;
 import com.app.entity.Reservation;
 import com.app.repository.PieceJustificativeRepository;
@@ -75,6 +76,7 @@ public class FileUploadService {
         return piece;
     }
 
+    @Audited(action = "SUPPRESSION_PIECE_JUSTIFICATIVE")
     private void deleteFileAfterSend(PieceJustificative piece) {
         try {
             Path path = Paths.get(piece.getFilepath());

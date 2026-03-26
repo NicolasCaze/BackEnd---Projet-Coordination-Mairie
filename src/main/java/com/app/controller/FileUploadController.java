@@ -1,5 +1,6 @@
 package com.app.controller;
 
+import com.app.annotation.Audited;
 import com.app.entity.PieceJustificative;
 import com.app.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class FileUploadController {
     private final FileUploadService fileUploadService;
 
     @PostMapping("/piece-justificative/{reservationId}")
+    @Audited(action = "UPLOAD_PIECE_JUSTIFICATIVE")
     public ResponseEntity<PieceJustificative> uploadPieceJustificative(
             @PathVariable UUID reservationId,
             @RequestParam("file") MultipartFile file) {

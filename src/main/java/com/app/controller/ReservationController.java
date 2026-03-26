@@ -1,10 +1,10 @@
 package com.app.controller;
 
+import com.app.annotation.Audited;
 import com.app.dto.CreateReservationRequest;
-import com.app.dto.UpdateValidationRequest;
 import com.app.dto.ReservationDTO;
 import com.app.dto.UpdateCautionRequest;
-import com.app.dto.UpdateStatutRequest;
+import com.app.dto.UpdateValidationRequest;
 import com.app.entity.Bien;
 import com.app.entity.Delegation;
 import com.app.entity.Groupe;
@@ -87,6 +87,7 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}/statut")
+    @Audited(action = "PATCH_STATUT_RESERVATION")
     public ResponseEntity<ReservationDTO> updateReservationValidation(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateValidationRequest request,
@@ -103,6 +104,7 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}/caution")
+    @Audited(action = "PATCH_CAUTION_RESERVATION")
     public ResponseEntity<ReservationDTO> updateReservationCaution(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateCautionRequest request,

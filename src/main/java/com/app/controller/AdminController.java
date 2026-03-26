@@ -1,5 +1,6 @@
 package com.app.controller;
 
+import com.app.annotation.Audited;
 import com.app.dto.DelegationRequest;
 import com.app.dto.DelegationResponse;
 import com.app.entity.Delegation;
@@ -79,6 +80,7 @@ public class AdminController {
 
     @PostMapping("/impersonate/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Audited(action = "IMPERSONATION")
     public ResponseEntity<Map<String, Object>> impersonateUser(
             @PathVariable UUID userId,
             Authentication authentication) {

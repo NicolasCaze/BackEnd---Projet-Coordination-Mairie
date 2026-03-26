@@ -1,5 +1,6 @@
 com/app/util/JwtUtil.class
 com/app/dto/DelegationResponse.class
+com/app/repository/AuditLogRepository.class
 com/app/entity/TokenBlacklist$TokenBlacklistBuilder.class
 com/app/dto/UserGroupeDTO.class
 com/app/service/DelegationPermissionService.class
@@ -30,6 +31,7 @@ com/app/entity/Reservation$Statut.class
 com/app/dto/DocumentRuleResponse$DocumentRuleResponseBuilder.class
 com/app/controller/AttachmentController.class
 com/app/controller/FileUploadController.class
+com/app/entity/ImpersonationLog$ImpersonationLogBuilder.class
 com/app/config/OpenApiConfig.class
 com/app/entity/Reservation$ReservationBuilder.class
 com/app/service/FileUploadService.class
@@ -38,6 +40,8 @@ com/app/entity/Delegation$DelegationBuilder.class
 com/app/entity/DocumentRule$DocumentRuleBuilder.class
 com/app/exception/GlobalExceptionHandler.class
 com/app/service/AttachmentService.class
+com/app/entity/AuditLog$AuditLogBuilder.class
+com/app/entity/ImpersonationLog.class
 com/app/service/TarifService.class
 com/app/service/EmailService.class
 com/app/entity/PieceJustificative.class
@@ -47,13 +51,17 @@ com/app/dto/DelegationResponse$DelegationResponseBuilder.class
 com/app/repository/TarifRepository.class
 com/app/service/AuthService.class
 com/app/dto/BienDTO.class
+com/app/repository/ImpersonationLogRepository.class
+com/app/annotation/Audited.class
 com/app/dto/GroupeDTO$GroupeDTOBuilder.class
 com/app/repository/PieceJustificativeRepository.class
+com/app/service/AuditLogService.class
 com/app/repository/DelegationRepository.class
 com/app/dto/RequiredDocumentResponse.class
 com/app/repository/DocumentRuleRepository.class
 com/app/dto/CreateReservationRequest.class
 com/app/dto/UpdateValidationRequest.class
+com/app/filter/ImpersonationLoggingFilter.class
 com/app/dto/RegisterRequest.class
 com/app/dto/UpdateStatutRequest$UpdateStatutRequestBuilder.class
 com/app/entity/CatBien.class
@@ -67,6 +75,7 @@ com/app/service/GroupeService.class
 com/app/dto/UpdateStatutRequest.class
 com/app/entity/User$UserBuilder.class
 com/app/controller/GroupeController.class
+com/app/entity/AuditLog.class
 com/app/config/DataSeeder.class
 com/app/entity/Tarif$TarifBuilder.class
 com/app/dto/UserGroupeDTO$UserGroupeDTOBuilder.class
@@ -74,11 +83,13 @@ com/app/exception/AuthenticationException.class
 com/app/exception/ReservationConflictException.class
 com/app/entity/Groupe.class
 com/app/dto/UserDTO.class
+com/app/service/ImpersonationService.class
 com/app/repository/UserRepository.class
 com/app/entity/User.class
 com/app/entity/Reservation.class
 com/app/repository/ReservationRepository.class
 com/app/entity/Delegation.class
+com/app/aspect/AuditAspect.class
 com/app/service/CatBienService.class
 com/app/controller/UserController.class
 com/app/entity/Groupe$TypeGroupe.class
