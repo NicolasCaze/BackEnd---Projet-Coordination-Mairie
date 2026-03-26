@@ -1,20 +1,24 @@
 package com.app.controller;
 
-import com.app.annotation.Audited;
 import com.app.dto.DelegationRequest;
 import com.app.dto.DelegationResponse;
+import com.app.dto.AuditLogDTO;
 import com.app.entity.Delegation;
 import com.app.entity.User;
 import com.app.service.DelegationService;
 import com.app.service.ImpersonationService;
+import com.app.service.AuditLogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,6 +31,7 @@ public class AdminController {
 
     private final DelegationService delegationService;
     private final ImpersonationService impersonationService;
+    private final AuditLogService auditLogService;
 
     @PostMapping("/delegations")
     @PreAuthorize("hasRole('ADMIN')")
@@ -80,7 +85,6 @@ public class AdminController {
 
     @PostMapping("/impersonate/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Audited(action = "IMPERSONATION")
     public ResponseEntity<Map<String, Object>> impersonateUser(
             @PathVariable UUID userId,
             Authentication authentication) {
@@ -114,5 +118,22 @@ public class AdminController {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/audit-logs")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<AuditLogDTO>> getAuditLogs(
+            @RequestParam(required = false) UUID actorId,
+            @RequestParam(required = false) UUID targetUserId,
+            @RequestParam(required = false) String action,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        Page<AuditLogDTO> auditLogs = auditLogService.getAuditLogs(
+                actorId, targetUserId, action, dateFrom, dateTo, page, size);
+        
+        return ResponseEntity.ok(auditLogs);
     }
 }
