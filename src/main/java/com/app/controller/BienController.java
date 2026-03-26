@@ -8,6 +8,11 @@ import com.app.entity.Reservation;
 import com.app.service.BienService;
 import com.app.service.CatBienService;
 import com.app.service.ReservationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +31,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/biens")
 @RequiredArgsConstructor
+@Tag(name = "Biens", description = "Gestion des biens municipaux réservables")
 public class BienController {
 
     private final BienService bienService;
@@ -33,6 +39,10 @@ public class BienController {
     private final ReservationService reservationService;
 
     @GetMapping
+    @Operation(summary = "Liste tous les biens", description = "Récupère la liste paginée des biens visibles avec filtres optionnels")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Liste des biens récupérée avec succès")
+    })
     public ResponseEntity<Page<BienDTO>> getAllBiens(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -62,13 +72,23 @@ public class BienController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BienDTO> getBienById(@PathVariable UUID id) {
+    @Operation(summary = "Récupère un bien par ID", description = "Retourne les détails d'un bien spécifique")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Bien trouvé"),
+        @ApiResponse(responseCode = "404", description = "Bien non trouvé")
+    })
+    public ResponseEntity<BienDTO> getBienById(@PathVariable @Parameter(description = "ID du bien") UUID id) {
         Bien bien = bienService.findById(id);
         return ResponseEntity.ok(BienDTO.fromEntity(bien));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Crée un nouveau bien", description = "Crée un bien municipal (ADMIN uniquement)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Bien créé avec succès"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
     public ResponseEntity<BienDTO> createBien(@Valid @RequestBody BienDTO bienDTO) {
         CatBien catBien = null;
         if (bienDTO.getId_cat_bien() != null) {
@@ -89,7 +109,13 @@ public class BienController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<BienDTO> updateBien(@PathVariable UUID id, @Valid @RequestBody BienDTO bienDTO) {
+    @Operation(summary = "Met à jour un bien", description = "Modifie les informations d'un bien existant (ADMIN uniquement)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Bien mis à jour avec succès"),
+        @ApiResponse(responseCode = "404", description = "Bien non trouvé"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
+    public ResponseEntity<BienDTO> updateBien(@PathVariable @Parameter(description = "ID du bien") UUID id, @Valid @RequestBody BienDTO bienDTO) {
         CatBien catBien = null;
         if (bienDTO.getId_cat_bien() != null) {
             catBien = catBienService.findById(bienDTO.getId_cat_bien());
@@ -108,20 +134,37 @@ public class BienController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteBien(@PathVariable UUID id) {
+    @Operation(summary = "Supprime un bien", description = "Supprime définitivement un bien (ADMIN uniquement)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Bien supprimé avec succès"),
+        @ApiResponse(responseCode = "404", description = "Bien non trouvé"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
+    public ResponseEntity<Void> deleteBien(@PathVariable @Parameter(description = "ID du bien") UUID id) {
         bienService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/soft-delete")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> softDeleteBien(@PathVariable UUID id) {
+    @Operation(summary = "Masque un bien", description = "Rend un bien invisible sans le supprimer (ADMIN uniquement)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Bien masqué avec succès"),
+        @ApiResponse(responseCode = "404", description = "Bien non trouvé"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
+    public ResponseEntity<Void> softDeleteBien(@PathVariable @Parameter(description = "ID du bien") UUID id) {
         bienService.softDelete(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/reservations")
-    public ResponseEntity<List<ReservationDTO>> getReservationsByBien(@PathVariable UUID id) {
+    @Operation(summary = "Liste les réservations d'un bien", description = "Récupère toutes les réservations associées à un bien")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Liste des réservations récupérée"),
+        @ApiResponse(responseCode = "404", description = "Bien non trouvé")
+    })
+    public ResponseEntity<List<ReservationDTO>> getReservationsByBien(@PathVariable @Parameter(description = "ID du bien") UUID id) {
         bienService.findById(id);
         List<Reservation> reservations = reservationService.findByBien(id);
         List<ReservationDTO> reservationDTOs = reservations.stream()

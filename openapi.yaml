@@ -1,0 +1,831 @@
+openapi: 3.0.1
+info:
+  title: API Gestion Mairie
+  description: 'API REST pour la gestion des réservations de biens municipaux, des
+    utilisateurs, des groupes et des pièces justificatives. Système de coordination
+    pour la mairie.'
+  contact:
+    name: Équipe Mairie
+    email: contact@mairie.fr
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+  description: Serveur de développement local
+security:
+- bearer-jwt: []
+tags:
+- name: Authentification
+  description: Gestion de l'authentification et des tokens JWT
+- name: Utilisateurs
+  description: Gestion des utilisateurs et de leurs réservations
+- name: Biens
+  description: Gestion des biens municipaux réservables
+- name: Groupes
+  description: Gestion des groupes d'utilisateurs et de leurs membres
+- name: Réservations
+  description: Gestion des réservations de biens municipaux
+- name: Upload
+  description: Gestion de l'upload de pièces justificatives
+- name: Administration
+  description: 'Fonctionnalités d''administration: délégations, impersonation, audit
+    logs'
+paths:
+  /auth/login:
+    post:
+      tags:
+      - Authentification
+      summary: Connexion utilisateur
+      description: Authentifie un utilisateur et retourne un token JWT
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+        required: true
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Identifiants invalides
+        '403':
+          description: Compte sous tutelle ou inactif
+  /auth/register:
+    post:
+      tags:
+      - Authentification
+      summary: Inscription utilisateur
+      description: Crée un nouveau compte utilisateur
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        '201':
+          description: Compte créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Données invalides ou email déjà utilisé
+  /users/{id}/statut:
+    patch:
+      tags:
+      - Utilisateurs
+      summary: Valide le statut d'un utilisateur
+      description: Change le statut d'un utilisateur (PENDING -> ACTIVE/REJECTED)
+        - SECRETARY/ADMIN
+      operationId: updateUserStatut
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              enum:
+              - ACTIF
+              - INACTIF
+              - SUSPENDU
+              - PENDING
+              - ACTIVE
+              - REJECTED
+        required: true
+      responses:
+        '200':
+          description: Statut mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '403':
+          description: Accès refusé
+        '404':
+          description: Utilisateur non trouvé
+      security:
+      - bearer-jwt: []
+  /biens:
+    get:
+      tags:
+      - Biens
+      summary: Liste tous les biens
+      description: Récupère la liste paginée des biens visibles avec filtres optionnels
+      operationId: getAllBiens
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      - name: sortBy
+        in: query
+        required: false
+        schema:
+          type: string
+          default: creerLe
+      - name: sortDir
+        in: query
+        required: false
+        schema:
+          type: string
+          default: desc
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: categoryId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Liste des biens récupérée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageBienDTO'
+      security:
+      - bearer-jwt: []
+    post:
+      tags:
+      - Biens
+      summary: Crée un nouveau bien
+      description: Crée un bien municipal (ADMIN uniquement)
+      operationId: createBien
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BienDTO'
+        required: true
+      responses:
+        '201':
+          description: Bien créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BienDTO'
+        '403':
+          description: Accès refusé
+      security:
+      - bearer-jwt: []
+  /biens/{id}:
+    get:
+      tags:
+      - Biens
+      summary: Récupère un bien par ID
+      description: Retourne les détails d'un bien spécifique
+      operationId: getBienById
+      parameters:
+      - name: id
+        in: path
+        description: ID du bien
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Bien trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BienDTO'
+        '404':
+          description: Bien non trouvé
+      security:
+      - bearer-jwt: []
+    put:
+      tags:
+      - Biens
+      summary: Met à jour un bien
+      description: Modifie les informations d'un bien existant (ADMIN uniquement)
+      operationId: updateBien
+      parameters:
+      - name: id
+        in: path
+        description: ID du bien
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BienDTO'
+        required: true
+      responses:
+        '200':
+          description: Bien mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BienDTO'
+        '403':
+          description: Accès refusé
+        '404':
+          description: Bien non trouvé
+      security:
+      - bearer-jwt: []
+    delete:
+      tags:
+      - Biens
+      summary: Supprime un bien
+      description: Supprime définitivement un bien (ADMIN uniquement)
+      operationId: deleteBien
+      parameters:
+      - name: id
+        in: path
+        description: ID du bien
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: Bien supprimé avec succès
+        '403':
+          description: Accès refusé
+        '404':
+          description: Bien non trouvé
+      security:
+      - bearer-jwt: []
+  /biens/{id}/reservations:
+    get:
+      tags:
+      - Biens
+      summary: Liste les réservations d'un bien
+      description: Récupère toutes les réservations associées à un bien
+      operationId: getReservationsByBien
+      parameters:
+      - name: id
+        in: path
+        description: ID du bien
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Liste des réservations récupérée
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReservationDTO'
+        '404':
+          description: Bien non trouvé
+      security:
+      - bearer-jwt: []
+  /groupes:
+    get:
+      tags:
+      - Groupes
+      summary: Liste tous les groupes
+      description: Récupère la liste complète des groupes (ADMIN/MODERATEUR)
+      operationId: getAllGroupes
+      responses:
+        '200':
+          description: Liste des groupes récupérée
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Groupe'
+        '403':
+          description: Accès refusé
+      security:
+      - bearer-jwt: []
+    post:
+      tags:
+      - Groupes
+      summary: Crée un nouveau groupe
+      description: Crée un groupe d'utilisateurs avec permissions déléguées
+      operationId: createGroupe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Groupe'
+        required: true
+      responses:
+        '201':
+          description: Groupe créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Groupe'
+        '403':
+          description: Accès refusé
+      security:
+      - bearer-jwt: []
+  /groupes/{id}:
+    get:
+      tags:
+      - Groupes
+      summary: Récupère un groupe par ID
+      description: Retourne les détails d'un groupe spécifique (ADMIN/MODERATEUR)
+      operationId: getGroupeById
+      parameters:
+      - name: id
+        in: path
+        description: ID du groupe
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Groupe trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Groupe'
+        '403':
+          description: Accès refusé
+        '404':
+          description: Groupe non trouvé
+      security:
+      - bearer-jwt: []
+    delete:
+      tags:
+      - Groupes
+      summary: Supprime un groupe
+      description: Supprime un groupe (sauf CONSEIL_MUNICIPAL) avec permissions déléguées
+      operationId: deleteGroupe
+      parameters:
+      - name: id
+        in: path
+        description: ID du groupe
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: Groupe supprimé avec succès
+        '403':
+          description: Accès refusé
+        '404':
+          description: Groupe non trouvé
+      security:
+      - bearer-jwt: []
+  /reservations/{id}/statut:
+    patch:
+      tags:
+      - Réservations
+      summary: Valide une réservation
+      description: Change le statut de validation d'une réservation avec permissions
+        déléguées
+      operationId: updateReservationValidation
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateValidationRequest'
+        required: true
+      responses:
+        '200':
+          description: Statut mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationDTO'
+        '403':
+          description: Accès refusé
+        '404':
+          description: Réservation non trouvée
+      security:
+      - bearer-jwt: []
+  /reservations/{id}/caution:
+    patch:
+      tags:
+      - Réservations
+      summary: Modifie la caution d'une réservation
+      description: Met à jour le statut de caution d'une réservation avec permissions
+        déléguées
+      operationId: updateReservationCaution
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCautionRequest'
+        required: true
+      responses:
+        '200':
+          description: Caution mise à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationDTO'
+        '403':
+          description: Accès refusé
+        '404':
+          description: Réservation non trouvée
+      security:
+      - bearer-jwt: []
+  /api/upload/piece-justificative/{reservationId}:
+    post:
+      tags:
+      - Upload
+      summary: Upload une pièce justificative
+      description: Téléverse un fichier justificatif pour une réservation
+      operationId: uploadPieceJustificative
+      parameters:
+      - name: reservationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Fichier uploadé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PieceJustificative'
+        '400':
+          description: Fichier invalide ou réservation non trouvée
+      security:
+      - bearer-jwt: []
+  /admin/impersonate/{userId}:
+    post:
+      tags:
+      - Administration
+      summary: Impersonate un utilisateur
+      description: Permet à un admin de se connecter en tant qu'un autre utilisateur
+        (ADMIN uniquement)
+      operationId: impersonateUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Token d'impersonation généré
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+        '400':
+          description: Utilisateur invalide
+        '403':
+          description: Accès refusé
+      security:
+      - bearer-jwt: []
+  /admin/audit-logs:
+    get:
+      tags:
+      - Administration
+      summary: Consulte les logs d'audit
+      description: Récupère les logs d'audit avec filtres optionnels (ADMIN uniquement)
+      operationId: getAuditLogs
+      parameters:
+      - name: actorId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: targetUserId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: action
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: dateFrom
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: dateTo
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: Logs d'audit récupérés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageAuditLogDTO'
+        '403':
+          description: Accès refusé
+      security:
+      - bearer-jwt: []
+components:
+  schemas:
+    AuthRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        mot_de_passe:
+          type: string
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        refreshToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserDTO'
+    RegisterRequest:
+      type: object
+      properties:
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        mot_de_passe:
+          type: string
+        telephone:
+          type: string
+    UserDTO:
+      type: object
+      properties:
+        id_user:
+          type: string
+          format: uuid
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        telephone:
+          type: string
+        role:
+          type: string
+          enum:
+          - ADMIN
+          - USER
+          - MODERATEUR
+          - TUTORED
+          - SECRETARY
+        statut:
+          type: string
+          enum:
+          - ACTIF
+          - INACTIF
+          - SUSPENDU
+          - PENDING
+          - ACTIVE
+          - REJECTED
+    BienDTO:
+      type: object
+      properties:
+        id_bien:
+          type: string
+          format: uuid
+        nom:
+          type: string
+        description:
+          type: string
+        estVisible:
+          type: boolean
+        id_cat_bien:
+          type: string
+          format: uuid
+        creerLe:
+          type: string
+          format: date-time
+    Groupe:
+      type: object
+      properties:
+        id_groupe:
+          type: string
+          format: uuid
+        nom:
+          type: string
+        description:
+          type: string
+        type_groupe:
+          type: string
+          enum:
+          - STANDARD
+          - CONSEIL_MUNICIPAL
+        type_exoneration:
+          type: string
+          enum:
+          - ASSO
+          - SOCIAL
+          - MANDAT_ELECTIF
+        niveau_tarif:
+          type: integer
+          format: int32
+        creerLe:
+          type: string
+          format: date-time
+    ReservationDTO:
+      type: object
+      properties:
+        id_reservation:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/UserDTO'
+        bien:
+          $ref: '#/components/schemas/BienDTO'
+        date_debut:
+          type: string
+          format: date-time
+        date_fin:
+          type: string
+          format: date-time
+        est_valide:
+          type: boolean
+        statut_caution:
+          type: string
+          enum:
+          - NON_REQUISE
+          - EN_ATTENTE
+          - VERSEE
+          - RESTITUEE
+    UpdateValidationRequest:
+      type: object
+      properties:
+        est_valide:
+          type: boolean
+    UpdateCautionRequest:
+      type: object
+      properties:
+        statut_caution:
+          type: string
+          enum:
+          - NON_REQUISE
+          - EN_ATTENTE
+          - VERSEE
+          - RESTITUEE
+    PieceJustificative:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        filepath:
+          type: string
+        uploaded_at:
+          type: string
+          format: date-time
+        sent_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+    AuditLogDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        actor_id:
+          type: string
+          format: uuid
+        actor_role:
+          type: string
+          enum:
+          - ADMIN
+          - USER
+          - MODERATEUR
+          - TUTORED
+          - SECRETARY
+        target_user_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+        payload:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    PageBienDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/BienDTO'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        number:
+          type: integer
+          format: int32
+    PageAuditLogDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLogDTO'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        number:
+          type: integer
+          format: int32
+  securitySchemes:
+    bearer-jwt:
+      type: http
+      description: 'Authentification JWT. Format: Bearer {token}'
+      scheme: bearer
+      bearerFormat: JWT

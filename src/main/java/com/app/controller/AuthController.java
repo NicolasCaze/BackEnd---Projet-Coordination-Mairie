@@ -5,6 +5,10 @@ import com.app.dto.AuthResponse;
 import com.app.dto.RegisterRequest;
 import com.app.exception.AuthenticationException;
 import com.app.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +19,18 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentification", description = "Gestion de l'authentification et des tokens JWT")
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/login")
+    @Operation(summary = "Connexion utilisateur", description = "Authentifie un utilisateur et retourne un token JWT")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Connexion réussie"),
+        @ApiResponse(responseCode = "401", description = "Identifiants invalides"),
+        @ApiResponse(responseCode = "403", description = "Compte sous tutelle ou inactif")
+    })
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest authRequest) {
         try {
             AuthResponse response = authService.authenticate(
@@ -36,6 +47,11 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Inscription utilisateur", description = "Crée un nouveau compte utilisateur")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Compte créé avec succès"),
+        @ApiResponse(responseCode = "400", description = "Données invalides ou email déjà utilisé")
+    })
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
             AuthResponse response = authService.register(registerRequest);

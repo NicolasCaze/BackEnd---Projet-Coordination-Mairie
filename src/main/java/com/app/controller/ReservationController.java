@@ -1,6 +1,11 @@
 package com.app.controller;
 
 import com.app.annotation.Audited;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
 import com.app.dto.CreateReservationRequest;
 import com.app.dto.ReservationDTO;
 import com.app.dto.UpdateCautionRequest;
@@ -47,6 +52,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/reservations")
 @RequiredArgsConstructor
+@Tag(name = "Réservations", description = "Gestion des réservations de biens municipaux")
 public class ReservationController {
 
     private final ReservationService reservationService;
@@ -88,6 +94,12 @@ public class ReservationController {
 
     @PatchMapping("/{id}/statut")
     @Audited(action = "PATCH_STATUT_RESERVATION")
+    @Operation(summary = "Valide une réservation", description = "Change le statut de validation d'une réservation avec permissions déléguées")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Statut mis à jour avec succès"),
+        @ApiResponse(responseCode = "404", description = "Réservation non trouvée"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
     public ResponseEntity<ReservationDTO> updateReservationValidation(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateValidationRequest request,
@@ -105,6 +117,12 @@ public class ReservationController {
 
     @PatchMapping("/{id}/caution")
     @Audited(action = "PATCH_CAUTION_RESERVATION")
+    @Operation(summary = "Modifie la caution d'une réservation", description = "Met à jour le statut de caution d'une réservation avec permissions déléguées")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Caution mise à jour avec succès"),
+        @ApiResponse(responseCode = "404", description = "Réservation non trouvée"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
     public ResponseEntity<ReservationDTO> updateReservationCaution(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateCautionRequest request,

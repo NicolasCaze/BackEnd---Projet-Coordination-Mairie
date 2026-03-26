@@ -22,6 +22,7 @@
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/Bien.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/AuditLogRepository.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/Tarif.java
+/Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/AuditLogDTO.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/UserService.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/DelegationRequest.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/UserGroupeId.java

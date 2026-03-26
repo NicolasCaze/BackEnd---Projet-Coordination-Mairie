@@ -9,6 +9,11 @@ import com.app.entity.Delegation;
 import com.app.service.DelegationPermissionService;
 import com.app.service.ReservationService;
 import com.app.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +29,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Tag(name = "Utilisateurs", description = "Gestion des utilisateurs et de leurs réservations")
 public class UserController {
 
     private final UserService userService;
@@ -120,6 +126,12 @@ public class UserController {
 
     @PatchMapping("/{id}/statut")
     @Audited(action = "VALIDATION_COMPTE")
+    @Operation(summary = "Valide le statut d'un utilisateur", description = "Change le statut d'un utilisateur (PENDING -> ACTIVE/REJECTED) - SECRETARY/ADMIN")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Statut mis à jour avec succès"),
+        @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
     public ResponseEntity<UserDTO> updateUserStatut(
             @PathVariable UUID id,
             @RequestBody User.Statut newStatut,

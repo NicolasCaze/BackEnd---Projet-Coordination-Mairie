@@ -13,6 +13,11 @@ import com.app.service.DocumentRuleService;
 import com.app.service.GroupeService;
 import com.app.service.ReservationService;
 import com.app.service.UserGroupeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +32,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/groupes")
 @RequiredArgsConstructor
+@Tag(name = "Groupes", description = "Gestion des groupes d'utilisateurs et de leurs membres")
 public class GroupeController {
 
     private final GroupeService groupeService;
@@ -48,19 +54,35 @@ public class GroupeController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
-    public ResponseEntity<Groupe> getGroupeById(@PathVariable UUID id) {
+    @Operation(summary = "Récupère un groupe par ID", description = "Retourne les détails d'un groupe spécifique (ADMIN/MODERATEUR)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Groupe trouvé"),
+        @ApiResponse(responseCode = "404", description = "Groupe non trouvé"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
+    public ResponseEntity<Groupe> getGroupeById(@PathVariable @Parameter(description = "ID du groupe") UUID id) {
         Groupe groupe = groupeService.findById(id);
         return ResponseEntity.ok(groupe);
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
+    @Operation(summary = "Liste tous les groupes", description = "Récupère la liste complète des groupes (ADMIN/MODERATEUR)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Liste des groupes récupérée"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
     public ResponseEntity<List<Groupe>> getAllGroupes() {
         List<Groupe> groupes = groupeService.findAll();
         return ResponseEntity.ok(groupes);
     }
 
     @PostMapping
+    @Operation(summary = "Crée un nouveau groupe", description = "Crée un groupe d'utilisateurs avec permissions déléguées")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Groupe créé avec succès"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
     public ResponseEntity<Groupe> createGroupe(@RequestBody Groupe groupe, Authentication authentication) {
         delegationPermissionService.checkPermissionOrDelegatedPermission(
             authentication, 
@@ -79,7 +101,13 @@ public class GroupeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGroupe(@PathVariable UUID id, Authentication authentication) {
+    @Operation(summary = "Supprime un groupe", description = "Supprime un groupe (sauf CONSEIL_MUNICIPAL) avec permissions déléguées")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Groupe supprimé avec succès"),
+        @ApiResponse(responseCode = "404", description = "Groupe non trouvé"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
+    public ResponseEntity<Void> deleteGroupe(@PathVariable @Parameter(description = "ID du groupe") UUID id, Authentication authentication) {
         delegationPermissionService.checkPermissionOrDelegatedPermission(
             authentication, 
             Delegation.Permission.DELETE_GROUPE,

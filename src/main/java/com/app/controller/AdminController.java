@@ -1,5 +1,10 @@
 package com.app.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
 import com.app.dto.DelegationRequest;
 import com.app.dto.DelegationResponse;
 import com.app.dto.AuditLogDTO;
@@ -27,6 +32,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
+@Tag(name = "Administration", description = "Fonctionnalités d'administration: délégations, impersonation, audit logs")
 public class AdminController {
 
     private final DelegationService delegationService;
@@ -85,6 +91,12 @@ public class AdminController {
 
     @PostMapping("/impersonate/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Impersonate un utilisateur", description = "Permet à un admin de se connecter en tant qu'un autre utilisateur (ADMIN uniquement)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Token d'impersonation généré"),
+        @ApiResponse(responseCode = "400", description = "Utilisateur invalide"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
     public ResponseEntity<Map<String, Object>> impersonateUser(
             @PathVariable UUID userId,
             Authentication authentication) {
@@ -122,6 +134,11 @@ public class AdminController {
 
     @GetMapping("/audit-logs")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Consulte les logs d'audit", description = "Récupère les logs d'audit avec filtres optionnels (ADMIN uniquement)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Logs d'audit récupérés"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
     public ResponseEntity<Page<AuditLogDTO>> getAuditLogs(
             @RequestParam(required = false) UUID actorId,
             @RequestParam(required = false) UUID targetUserId,

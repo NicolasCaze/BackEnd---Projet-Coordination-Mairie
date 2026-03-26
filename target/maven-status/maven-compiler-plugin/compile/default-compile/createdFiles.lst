@@ -1,4 +1,5 @@
 com/app/util/JwtUtil.class
+com/app/dto/AuditLogDTO.class
 com/app/dto/DelegationResponse.class
 com/app/repository/AuditLogRepository.class
 com/app/entity/TokenBlacklist$TokenBlacklistBuilder.class
@@ -108,6 +109,7 @@ com/app/dto/GroupeDTO.class
 com/app/dto/AuthResponse.class
 com/app/repository/GroupeRepository.class
 com/app/entity/UserGroupeId.class
+com/app/dto/AuditLogDTO$AuditLogDTOBuilder.class
 com/app/dto/ReservationDTO.class
 com/app/controller/DocumentRuleController.class
 com/app/controller/ReservationController.class
