@@ -5,6 +5,7 @@ import com.app.dto.DelegationResponse;
 import com.app.entity.Delegation;
 import com.app.entity.User;
 import com.app.service.DelegationService;
+import com.app.service.ImpersonationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 public class AdminController {
 
     private final DelegationService delegationService;
+    private final ImpersonationService impersonationService;
 
     @PostMapping("/delegations")
     @PreAuthorize("hasRole('ADMIN')")
@@ -72,5 +75,42 @@ public class AdminController {
         delegationService.revokeDelegation(id);
         
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/impersonate/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> impersonateUser(
+            @PathVariable UUID userId,
+            Authentication authentication) {
+        
+        User currentUser = (User) authentication.getPrincipal();
+        
+        try {
+            String impersonationToken = impersonationService.generateImpersonationToken(
+                    currentUser.getId_user(), userId);
+            
+            // Logger l'action d'impersonation
+            impersonationService.logImpersonationAction(
+                    currentUser.getId_user(),
+                    userId,
+                    "IMPERSONATION_START",
+                    "/admin/impersonate/" + userId,
+                    "POST",
+                    null, // IP address sera ajoutée par un filtre
+                    null, // User agent sera ajouté par un filtre
+                    null
+            );
+            
+            return ResponseEntity.ok(Map.of(
+                    "token", impersonationToken,
+                    "expiresIn", 1800, // 30 minutes
+                    "impersonatedUserId", userId.toString(),
+                    "message", "Impersonation démarrée avec succès"
+            ));
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }

@@ -63,6 +63,10 @@ public class JwtUtil {
         return createToken(claims, email, refreshExpiration * 1000);
     }
 
+    public String createCustomToken(Map<String, Object> claims, String subject, Long validity) {
+        return createToken(claims, subject, validity);
+    }
+
     private String createToken(Map<String, Object> claims, String subject, Long validity) {
         return Jwts.builder()
                 .claims(claims)
