@@ -48,17 +48,27 @@ public class BienController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Liste des biens récupérée avec succès")
     })
-    public ResponseEntity<PagedResponse<BienDTO>> getAllBiens(Pageable pageable) {
+    public ResponseEntity<PagedResponse<BienDTO>> getAllBiens(
+            @RequestParam(required = false) @Parameter(description = "ID de la catégorie pour filtrer les biens") UUID categorie,
+            @RequestParam(required = false) @Parameter(description = "Recherche textuelle") String search,
+            Pageable pageable) {
         
         Page<Bien> biens;
         
+        Pageable effectivePageable = pageable;
         if (pageable.getSort().isEmpty()) {
-            // Appliquer un tri par défaut si aucun n'est spécifié
-            Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), 
+            effectivePageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), 
                 Sort.by(Sort.Direction.DESC, "creerLe"));
-            biens = bienService.findVisibleBiens(sortedPageable);
+        }
+        
+        if (categorie != null && search != null) {
+            biens = bienService.findVisibleBiensByCategoryAndSearch(categorie, search, effectivePageable);
+        } else if (categorie != null) {
+            biens = bienService.findVisibleBiensByCategory(categorie, effectivePageable);
+        } else if (search != null) {
+            biens = bienService.findVisibleBiensWithFilters(search, effectivePageable);
         } else {
-            biens = bienService.findVisibleBiens(pageable);
+            biens = bienService.findVisibleBiens(effectivePageable);
         }
         
         Page<BienDTO> bienDTOs = biens.map(BienDTO::fromEntity);
