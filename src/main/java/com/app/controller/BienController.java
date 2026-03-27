@@ -2,6 +2,7 @@ package com.app.controller;
 
 import com.app.dto.BienDTO;
 import com.app.dto.ReservationDTO;
+import com.app.dto.PagedResponse;
 import com.app.entity.Bien;
 import com.app.entity.CatBien;
 import com.app.entity.Reservation;
@@ -43,32 +44,21 @@ public class BienController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Liste des biens récupérée avec succès")
     })
-    public ResponseEntity<Page<BienDTO>> getAllBiens(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "creerLe") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) UUID categoryId) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
-            Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+    public ResponseEntity<PagedResponse<BienDTO>> getAllBiens(Pageable pageable) {
         
         Page<Bien> biens;
         
-        if (categoryId != null && search != null) {
-            biens = bienService.findVisibleBiensByCategoryAndSearch(categoryId, search, pageable);
-        } else if (categoryId != null) {
-            biens = bienService.findVisibleBiensByCategory(categoryId, pageable);
-        } else if (search != null) {
-            biens = bienService.findVisibleBiensWithFilters(search, pageable);
+        if (pageable.getSort().isEmpty()) {
+            // Appliquer un tri par défaut si aucun n'est spécifié
+            Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), 
+                Sort.by(Sort.Direction.DESC, "creerLe"));
+            biens = bienService.findVisibleBiens(sortedPageable);
         } else {
             biens = bienService.findVisibleBiens(pageable);
         }
         
         Page<BienDTO> bienDTOs = biens.map(BienDTO::fromEntity);
-        return ResponseEntity.ok(bienDTOs);
+        return ResponseEntity.ok(PagedResponse.of(bienDTOs));
     }
 
     @GetMapping("/{id}")

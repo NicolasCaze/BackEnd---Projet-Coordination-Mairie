@@ -4,42 +4,69 @@ import com.app.entity.Groupe;
 import com.app.entity.Reservation;
 import com.app.exception.ReservationConflictException;
 import com.app.repository.ReservationRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final UserService userService;
     private final GroupeService groupeService;
     private final BienService bienService;
+    
+    public ReservationService(ReservationRepository reservationRepository, UserService userService, 
+                           GroupeService groupeService, BienService bienService) {
+        this.reservationRepository = reservationRepository;
+        this.userService = userService;
+        this.groupeService = groupeService;
+        this.bienService = bienService;
+    }
 
+    public Page<Reservation> findAll(Pageable pageable) {
+        return reservationRepository.findAll(pageable);
+    }
+    
     public List<Reservation> findAll() {
         return reservationRepository.findAll();
     }
 
-    public Reservation findById(UUID id) {
-        return reservationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Réservation non trouvée : " + id));
+    public Page<Reservation> findByUser(UUID id_user, Pageable pageable) {
+        userService.findById(id_user);
+        return reservationRepository.findByUserIdUser(id_user, pageable);
     }
-
+    
     public List<Reservation> findByUser(UUID id_user) {
         userService.findById(id_user);
         return reservationRepository.findByUserIdUser(id_user);
     }
 
+    public Page<Reservation> findByGroupe(UUID id_groupe, Pageable pageable) {
+        groupeService.findById(id_groupe);
+        return reservationRepository.findByGroupeIdGroupe(id_groupe, pageable);
+    }
+    
     public List<Reservation> findByGroupe(UUID id_groupe) {
         groupeService.findById(id_groupe);
         return reservationRepository.findByGroupeIdGroupe(id_groupe);
     }
 
+    public Page<Reservation> findByBien(UUID id_bien, Pageable pageable) {
+        bienService.findById(id_bien);
+        return reservationRepository.findByBienIdBien(id_bien, pageable);
+    }
+    
     public List<Reservation> findByBien(UUID id_bien) {
         bienService.findById(id_bien);
         return reservationRepository.findByBienIdBien(id_bien);
+    }
+
+    public Reservation findById(UUID id) {
+        return reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Réservation non trouvée : " + id));
     }
 
     public Reservation create(Reservation reservation) {

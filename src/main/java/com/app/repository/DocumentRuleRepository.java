@@ -2,6 +2,8 @@ package com.app.repository;
 
 import com.app.entity.DocumentRule;
 import com.app.entity.Groupe;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +13,8 @@ import java.util.List;
 
 @Repository
 public interface DocumentRuleRepository extends JpaRepository<DocumentRule, Long> {
+    
+    Page<DocumentRule> findAll(Pageable pageable);
 
     @Query("SELECT dr FROM DocumentRule dr WHERE " +
            "(dr.typeGroupe = :typeGroupe OR dr.typeGroupe IS NULL) AND " +

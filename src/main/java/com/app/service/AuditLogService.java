@@ -43,6 +43,15 @@ public class AuditLogService {
 
     public Page<AuditLogDTO> getAuditLogs(UUID actorId, UUID targetUserId, String action, 
                                          LocalDateTime dateFrom, LocalDateTime dateTo, 
+                                         Pageable pageable) {
+        Page<AuditLog> auditLogs = auditLogRepository.findByFilters(
+                actorId, targetUserId, action, dateFrom, dateTo, pageable);
+        
+        return auditLogs.map(AuditLogDTO::fromEntity);
+    }
+    
+    public Page<AuditLogDTO> getAuditLogs(UUID actorId, UUID targetUserId, String action, 
+                                         LocalDateTime dateFrom, LocalDateTime dateTo, 
                                          int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
         

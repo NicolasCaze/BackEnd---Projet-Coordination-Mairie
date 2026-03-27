@@ -2,17 +2,25 @@ package com.app.service;
 
 import com.app.entity.Groupe;
 import com.app.repository.GroupeRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class GroupeService {
 
     private final GroupeRepository groupeRepository;
+    
+    public GroupeService(GroupeRepository groupeRepository) {
+        this.groupeRepository = groupeRepository;
+    }
 
+    public Page<Groupe> findAll(Pageable pageable) {
+        return groupeRepository.findAll(pageable);
+    }
+    
     public List<Groupe> findAll() {
         return groupeRepository.findAll();
     }

@@ -1,6 +1,8 @@
 package com.app.repository;
 
 import com.app.entity.Delegation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +13,9 @@ import java.util.UUID;
 
 @Repository
 public interface DelegationRepository extends JpaRepository<Delegation, UUID> {
+
+    @Query("SELECT d FROM Delegation d WHERE d.toUserId = :userId AND d.active = true")
+    Page<Delegation> findActiveDelegationsByUserId(@Param("userId") UUID userId, Pageable pageable);
 
     @Query("SELECT d FROM Delegation d WHERE d.toUserId = :userId AND d.active = true")
     List<Delegation> findActiveDelegationsByUserId(@Param("userId") UUID userId);

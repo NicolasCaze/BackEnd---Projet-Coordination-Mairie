@@ -3,19 +3,30 @@ package com.app.service;
 import com.app.entity.UserGroupe;
 import com.app.entity.UserGroupeId;
 import com.app.repository.UserGroupeRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class UserGroupeService {
 
     private final UserGroupeRepository userGroupeRepository;
     private final UserService userService;
     private final GroupeService groupeService;
+    
+    public UserGroupeService(UserGroupeRepository userGroupeRepository, UserService userService, GroupeService groupeService) {
+        this.userGroupeRepository = userGroupeRepository;
+        this.userService = userService;
+        this.groupeService = groupeService;
+    }
 
+    public Page<UserGroupe> findMembresByGroupe(UUID id_groupe, Pageable pageable) {
+        groupeService.findById(id_groupe);
+        return userGroupeRepository.findByGroupeIdGroupe(id_groupe, pageable);
+    }
+    
     public List<UserGroupe> findMembresByGroupe(UUID id_groupe) {
         groupeService.findById(id_groupe);
         return userGroupeRepository.findByGroupeIdGroupe(id_groupe);

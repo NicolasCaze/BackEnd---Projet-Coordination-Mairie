@@ -4,6 +4,7 @@ import com.app.dto.GroupeDTO;
 import com.app.dto.RequiredDocumentResponse;
 import com.app.dto.ReservationDTO;
 import com.app.dto.UserGroupeDTO;
+import com.app.dto.PagedResponse;
 import com.app.entity.Delegation;
 import com.app.entity.Groupe;
 import com.app.entity.Reservation;
@@ -13,12 +14,8 @@ import com.app.service.DocumentRuleService;
 import com.app.service.GroupeService;
 import com.app.service.ReservationService;
 import com.app.service.UserGroupeService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.Parameter;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,7 +28,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/groupes")
-@RequiredArgsConstructor
 @Tag(name = "Groupes", description = "Gestion des groupes d'utilisateurs et de leurs membres")
 public class GroupeController {
 
@@ -41,15 +37,23 @@ public class GroupeController {
     private final DocumentRuleService documentRuleService;
     private final DelegationPermissionService delegationPermissionService;
 
+    public GroupeController(GroupeService groupeService, ReservationService reservationService, 
+                         UserGroupeService userGroupeService, DocumentRuleService documentRuleService, 
+                         DelegationPermissionService delegationPermissionService) {
+        this.groupeService = groupeService;
+        this.reservationService = reservationService;
+        this.userGroupeService = userGroupeService;
+        this.documentRuleService = documentRuleService;
+        this.delegationPermissionService = delegationPermissionService;
+    }
+
     @GetMapping("/{id}/reservations")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
-    public ResponseEntity<List<ReservationDTO>> getGroupeReservations(@PathVariable UUID id) {
+    public ResponseEntity<PagedResponse<ReservationDTO>> getGroupeReservations(@PathVariable UUID id, Pageable pageable) {
         groupeService.findById(id);
-        List<Reservation> reservations = reservationService.findByGroupe(id);
-        List<ReservationDTO> reservationDTOs = reservations.stream()
-                .map(ReservationDTO::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(reservationDTOs);
+        Page<Reservation> reservationPage = reservationService.findByGroupe(id, pageable);
+        Page<ReservationDTO> reservationDTOPage = reservationPage.map(ReservationDTO::fromEntity);
+        return ResponseEntity.ok(PagedResponse.of(reservationDTOPage));
     }
 
     @GetMapping("/{id}")
@@ -67,14 +71,14 @@ public class GroupeController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
-    @Operation(summary = "Liste tous les groupes", description = "Récupère la liste complète des groupes (ADMIN/MODERATEUR)")
+    @Operation(summary = "Liste tous les groupes", description = "Récupère la liste paginée des groupes (ADMIN/MODERATEUR)")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Liste des groupes récupérée"),
         @ApiResponse(responseCode = "403", description = "Accès refusé")
     })
-    public ResponseEntity<List<Groupe>> getAllGroupes() {
-        List<Groupe> groupes = groupeService.findAll();
-        return ResponseEntity.ok(groupes);
+    public ResponseEntity<PagedResponse<Groupe>> getAllGroupes(Pageable pageable) {
+        Page<Groupe> groupePage = groupeService.findAll(pageable);
+        return ResponseEntity.ok(PagedResponse.of(groupePage));
     }
 
     @PostMapping
@@ -143,12 +147,10 @@ public class GroupeController {
 
     @GetMapping("/{id}/membres")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
-    public ResponseEntity<List<UserGroupeDTO>> getGroupeMembres(@PathVariable UUID id) {
-        List<UserGroupe> membres = userGroupeService.findMembresByGroupe(id);
-        List<UserGroupeDTO> membreDTOs = membres.stream()
-                .map(UserGroupeDTO::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(membreDTOs);
+    public ResponseEntity<PagedResponse<UserGroupeDTO>> getGroupeMembres(@PathVariable UUID id, Pageable pageable) {
+        Page<UserGroupe> membrePage = userGroupeService.findMembresByGroupe(id, pageable);
+        Page<UserGroupeDTO> membreDTOPage = membrePage.map(UserGroupeDTO::fromEntity);
+        return ResponseEntity.ok(PagedResponse.of(membreDTOPage));
     }
 
     @GetMapping("/{id}/required-documents")

@@ -1,22 +1,16 @@
 package com.app.controller;
 
 import com.app.annotation.Audited;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.Parameter;
 import com.app.dto.CreateReservationRequest;
 import com.app.dto.ReservationDTO;
 import com.app.dto.UpdateCautionRequest;
 import com.app.dto.UpdateValidationRequest;
+import com.app.dto.PagedResponse;
 import com.app.entity.Bien;
 import com.app.entity.Delegation;
 import com.app.entity.Groupe;
 import com.app.entity.Reservation;
 import com.app.entity.User;
-import com.app.entity.UserGroupe;
-import com.app.entity.UserGroupeId;
 import com.app.service.AuthService;
 import com.app.service.BienService;
 import com.app.service.DelegationPermissionService;
@@ -24,24 +18,11 @@ import com.app.service.GroupeService;
 import com.app.service.ReservationService;
 import com.app.service.UserGroupeService;
 import com.app.service.UserService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import com.app.service.GroupeService;
-import com.app.service.ReservationService;
-import com.app.service.UserGroupeService;
-import com.app.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -51,7 +32,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/reservations")
-@RequiredArgsConstructor
 @Tag(name = "Réservations", description = "Gestion des réservations de biens municipaux")
 public class ReservationController {
 
@@ -61,6 +41,17 @@ public class ReservationController {
     private final BienService bienService;
     private final UserGroupeService userGroupeService;
     private final DelegationPermissionService delegationPermissionService;
+    
+    public ReservationController(ReservationService reservationService, UserService userService, 
+                           GroupeService groupeService, BienService bienService, 
+                           UserGroupeService userGroupeService, DelegationPermissionService delegationPermissionService) {
+        this.reservationService = reservationService;
+        this.userService = userService;
+        this.groupeService = groupeService;
+        this.bienService = bienService;
+        this.userGroupeService = userGroupeService;
+        this.delegationPermissionService = delegationPermissionService;
+    }
 
     @PostMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN') or hasRole('MODERATEUR')")
@@ -140,24 +131,20 @@ public class ReservationController {
 
     @GetMapping("/users/{userId}")
     @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
-    public ResponseEntity<List<ReservationDTO>> getReservationsByUser(@PathVariable UUID userId) {
+    public ResponseEntity<PagedResponse<ReservationDTO>> getReservationsByUser(@PathVariable UUID userId, Pageable pageable) {
         userService.findById(userId);
-        List<Reservation> reservations = reservationService.findByUser(userId);
-        List<ReservationDTO> reservationDTOs = reservations.stream()
-                .map(ReservationDTO::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(reservationDTOs);
+        Page<Reservation> reservationPage = reservationService.findByUser(userId, pageable);
+        Page<ReservationDTO> reservationDTOPage = reservationPage.map(ReservationDTO::fromEntity);
+        return ResponseEntity.ok(PagedResponse.of(reservationDTOPage));
     }
 
     @GetMapping("/groupes/{groupeId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
-    public ResponseEntity<List<ReservationDTO>> getReservationsByGroupe(@PathVariable UUID groupeId) {
+    public ResponseEntity<PagedResponse<ReservationDTO>> getReservationsByGroupe(@PathVariable UUID groupeId, Pageable pageable) {
         groupeService.findById(groupeId);
-        List<Reservation> reservations = reservationService.findByGroupe(groupeId);
-        List<ReservationDTO> reservationDTOs = reservations.stream()
-                .map(ReservationDTO::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(reservationDTOs);
+        Page<Reservation> reservationPage = reservationService.findByGroupe(groupeId, pageable);
+        Page<ReservationDTO> reservationDTOPage = reservationPage.map(ReservationDTO::fromEntity);
+        return ResponseEntity.ok(PagedResponse.of(reservationDTOPage));
     }
 
     @GetMapping("/{id}")
@@ -169,12 +156,10 @@ public class ReservationController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
-    public ResponseEntity<List<ReservationDTO>> getAllReservations() {
-        List<Reservation> reservations = reservationService.findAll();
-        List<ReservationDTO> reservationDTOs = reservations.stream()
-                .map(ReservationDTO::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(reservationDTOs);
+    public ResponseEntity<PagedResponse<ReservationDTO>> getAllReservations(Pageable pageable) {
+        Page<Reservation> reservationPage = reservationService.findAll(pageable);
+        Page<ReservationDTO> reservationDTOPage = reservationPage.map(ReservationDTO::fromEntity);
+        return ResponseEntity.ok(PagedResponse.of(reservationDTOPage));
     }
 
     @DeleteMapping("/{id}")

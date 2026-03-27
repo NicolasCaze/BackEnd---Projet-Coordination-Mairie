@@ -4,7 +4,8 @@ import com.app.entity.Delegation;
 import com.app.entity.User;
 import com.app.repository.DelegationRepository;
 import com.app.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,12 +14,16 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class DelegationService {
 
     private final DelegationRepository delegationRepository;
     private final UserRepository userRepository;
+    
+    public DelegationService(DelegationRepository delegationRepository, UserRepository userRepository) {
+        this.delegationRepository = delegationRepository;
+        this.userRepository = userRepository;
+    }
 
     public Delegation createDelegation(UUID fromUserId, UUID toUserId, Delegation.Permission permission) {
         // Vérifier que les utilisateurs existent et sont des admins
@@ -51,6 +56,13 @@ public class DelegationService {
         return delegationRepository.save(delegation);
     }
 
+    public Page<Delegation> getDelegationsReceivedByUser(UUID userId, Pageable pageable) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé: " + userId));
+        
+        return delegationRepository.findActiveDelegationsByUserId(userId, pageable);
+    }
+    
     public List<Delegation> getDelegationsReceivedByUser(UUID userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé: " + userId));

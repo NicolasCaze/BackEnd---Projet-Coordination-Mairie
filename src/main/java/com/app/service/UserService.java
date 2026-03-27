@@ -3,19 +3,27 @@ package com.app.service;
 import com.app.entity.User;
 import com.app.exception.LastAdminException;
 import com.app.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
+    public Page<User> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+    
     public List<User> findAll() {
         return userRepository.findAll();
     }

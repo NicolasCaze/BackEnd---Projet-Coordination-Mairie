@@ -3,18 +3,16 @@ package com.app.controller;
 import com.app.annotation.Audited;
 import com.app.dto.UserDTO;
 import com.app.dto.ReservationDTO;
+import com.app.dto.PagedResponse;
 import com.app.entity.Reservation;
 import com.app.entity.User;
 import com.app.entity.Delegation;
 import com.app.service.DelegationPermissionService;
 import com.app.service.ReservationService;
 import com.app.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.Parameter;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,22 +26,25 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 @Tag(name = "Utilisateurs", description = "Gestion des utilisateurs et de leurs réservations")
 public class UserController {
 
     private final UserService userService;
     private final ReservationService reservationService;
     private final DelegationPermissionService delegationPermissionService;
+    
+    public UserController(UserService userService, ReservationService reservationService, DelegationPermissionService delegationPermissionService) {
+        this.userService = userService;
+        this.reservationService = reservationService;
+        this.delegationPermissionService = delegationPermissionService;
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<User> users = userService.findAll();
-        List<UserDTO> userDTOs = users.stream()
-                .map(UserDTO::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(userDTOs);
+    public ResponseEntity<PagedResponse<UserDTO>> getAllUsers(Pageable pageable) {
+        Page<User> userPage = userService.findAll(pageable);
+        Page<UserDTO> userDTOPage = userPage.map(UserDTO::fromEntity);
+        return ResponseEntity.ok(PagedResponse.of(userDTOPage));
     }
 
     @GetMapping("/{id}")
@@ -104,13 +105,11 @@ public class UserController {
 
     @GetMapping("/{id}/reservations")
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
-    public ResponseEntity<List<ReservationDTO>> getUserReservations(@PathVariable UUID id) {
+    public ResponseEntity<PagedResponse<ReservationDTO>> getUserReservations(@PathVariable UUID id, Pageable pageable) {
         userService.findById(id);
-        List<Reservation> reservations = reservationService.findByUser(id);
-        List<ReservationDTO> reservationDTOs = reservations.stream()
-                .map(ReservationDTO::fromEntity)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(reservationDTOs);
+        Page<Reservation> reservationPage = reservationService.findByUser(id, pageable);
+        Page<ReservationDTO> reservationDTOPage = reservationPage.map(ReservationDTO::fromEntity);
+        return ResponseEntity.ok(PagedResponse.of(reservationDTOPage));
     }
 
     @DeleteMapping("/{id}")

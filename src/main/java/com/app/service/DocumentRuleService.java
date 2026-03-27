@@ -7,8 +7,8 @@ import com.app.entity.DocumentRule;
 import com.app.entity.Groupe;
 import com.app.repository.DocumentRuleRepository;
 import com.app.repository.GroupeRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,13 +16,20 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class DocumentRuleService {
 
     private final DocumentRuleRepository documentRuleRepository;
     private final GroupeRepository groupeRepository;
+    
+    public DocumentRuleService(DocumentRuleRepository documentRuleRepository, GroupeRepository groupeRepository) {
+        this.documentRuleRepository = documentRuleRepository;
+        this.groupeRepository = groupeRepository;
+    }
 
+    public Page<DocumentRuleResponse> getAllRules(Pageable pageable) {
+        return documentRuleRepository.findAll(pageable).map(this::convertToResponse);
+    }
+    
     public List<DocumentRuleResponse> getAllRules() {
         return documentRuleRepository.findAll().stream()
                 .map(this::convertToResponse)

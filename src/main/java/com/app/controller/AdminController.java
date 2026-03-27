@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import com.app.dto.DelegationRequest;
 import com.app.dto.DelegationResponse;
 import com.app.dto.AuditLogDTO;
+import com.app.dto.PagedResponse;
 import com.app.entity.Delegation;
 import com.app.entity.User;
 import com.app.service.DelegationService;
@@ -16,6 +17,7 @@ import com.app.service.AuditLogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,16 +65,13 @@ public class AdminController {
 
     @GetMapping("/delegations/me")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<DelegationResponse>> getMyDelegations(Authentication authentication) {
+    public ResponseEntity<PagedResponse<DelegationResponse>> getMyDelegations(Authentication authentication, Pageable pageable) {
         User currentUser = (User) authentication.getPrincipal();
         
-        List<Delegation> delegations = delegationService.getDelegationsReceivedByUser(currentUser.getId_user());
+        Page<Delegation> delegationPage = delegationService.getDelegationsReceivedByUser(currentUser.getId_user(), pageable);
+        Page<DelegationResponse> delegationResponsePage = delegationPage.map(DelegationResponse::fromEntity);
         
-        List<DelegationResponse> delegationResponses = delegations.stream()
-                .map(DelegationResponse::fromEntity)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(delegationResponses);
+        return ResponseEntity.ok(PagedResponse.of(delegationResponsePage));
     }
 
     @DeleteMapping("/delegations/{id}")
@@ -139,18 +138,17 @@ public class AdminController {
         @ApiResponse(responseCode = "200", description = "Logs d'audit récupérés"),
         @ApiResponse(responseCode = "403", description = "Accès refusé")
     })
-    public ResponseEntity<Page<AuditLogDTO>> getAuditLogs(
+    public ResponseEntity<PagedResponse<AuditLogDTO>> getAuditLogs(
             @RequestParam(required = false) UUID actorId,
             @RequestParam(required = false) UUID targetUserId,
             @RequestParam(required = false) String action,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            Pageable pageable) {
         
-        Page<AuditLogDTO> auditLogs = auditLogService.getAuditLogs(
-                actorId, targetUserId, action, dateFrom, dateTo, page, size);
+        Page<AuditLogDTO> auditLogPage = auditLogService.getAuditLogs(
+                actorId, targetUserId, action, dateFrom, dateTo, pageable);
         
-        return ResponseEntity.ok(auditLogs);
+        return ResponseEntity.ok(PagedResponse.of(auditLogPage));
     }
 }
