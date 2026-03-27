@@ -1,0 +1,83 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: mairie_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Configure application properties for tests
+        run: |
+          mkdir -p src/test/resources
+          cat > src/test/resources/application-test.properties << EOF
+          spring.datasource.url=jdbc:postgresql://localhost:5432/mairie_db
+          spring.datasource.username=postgres
+          spring.datasource.password=postgres
+          spring.jpa.hibernate.ddl-auto=create-drop
+          spring.jpa.show-sql=false
+          jwt.secret=${{ secrets.JWT_SECRET }}
+          jwt.expiration=86400
+          jwt.refresh-expiration=604800
+          spring.mail.host=smtp.gmail.com
+          spring.mail.port=587
+          spring.mail.username=${{ secrets.SMTP_USERNAME }}
+          spring.mail.password=${{ secrets.SMTP_PASSWORD }}
+          app.mail.secretariat=secretariat@mairie.fr
+          app.upload.directory=temp-uploads-test
+          EOF
+
+      - name: Run tests
+        run: mvn test
+        env:
+          SPRING_PROFILES_ACTIVE: test
+
+      - name: Run verify
+        run: mvn verify
+        env:
+          SPRING_PROFILES_ACTIVE: test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports/
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: target/site/jacoco/

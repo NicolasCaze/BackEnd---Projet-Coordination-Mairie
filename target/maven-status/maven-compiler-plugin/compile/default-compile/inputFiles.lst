@@ -21,6 +21,7 @@
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/config/OpenApiConfig.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/Bien.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/AuditLogRepository.java
+/Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/exception/ResourceNotFoundException.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/Tarif.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/AuditLogDTO.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/UserService.java
@@ -43,6 +44,7 @@
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/EmailService.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/repository/UserRepository.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/PieceJustificative.java
+/Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/exception/ValidationException.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/entity/Delegation.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/AuthResponse.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/UpdateCautionRequest.java
@@ -74,6 +76,7 @@
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/UserGroupeDTO.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/controller/GroupeController.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/service/CatBienService.java
+/Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/exception/AuthorizationException.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/RequiredDocumentResponse.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/AttachmentResponse.java
 /Users/yevheniibondarenko/Projects/BackEnd---Projet-Coordination-Mairie/src/main/java/com/app/dto/GroupeDTO.java

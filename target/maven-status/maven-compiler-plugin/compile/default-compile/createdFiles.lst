@@ -12,6 +12,7 @@ com/app/dto/AttachmentResponse.class
 com/app/entity/Reservation$StatutCaution.class
 com/app/dto/DelegationRequest.class
 com/app/repository/BienRepository.class
+com/app/exception/AuthorizationException.class
 com/app/entity/UserGroupe$UserGroupeBuilder.class
 com/app/dto/DocumentRuleResponse.class
 com/app/entity/UserGroupe.class
@@ -46,6 +47,7 @@ com/app/entity/ImpersonationLog.class
 com/app/service/TarifService.class
 com/app/service/EmailService.class
 com/app/entity/PieceJustificative.class
+com/app/exception/ValidationException.class
 com/app/dto/UpdateValidationRequest$UpdateValidationRequestBuilder.class
 com/app/entity/DocumentRule.class
 com/app/dto/DelegationResponse$DelegationResponseBuilder.class
@@ -106,6 +108,7 @@ com/app/dto/BienDTO$BienDTOBuilder.class
 com/app/entity/CatBien$CatBienBuilder.class
 com/app/controller/BienController.class
 com/app/dto/GroupeDTO.class
+com/app/exception/ResourceNotFoundException.class
 com/app/dto/AuthResponse.class
 com/app/repository/GroupeRepository.class
 com/app/entity/UserGroupeId.class
