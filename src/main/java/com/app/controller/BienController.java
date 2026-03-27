@@ -2,13 +2,16 @@ package com.app.controller;
 
 import com.app.dto.BienDTO;
 import com.app.dto.ReservationDTO;
+import com.app.dto.TarifDTO;
 import com.app.dto.PagedResponse;
 import com.app.entity.Bien;
 import com.app.entity.CatBien;
 import com.app.entity.Reservation;
+import com.app.entity.Tarif;
 import com.app.service.BienService;
 import com.app.service.CatBienService;
 import com.app.service.ReservationService;
+import com.app.service.TarifService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,6 +41,7 @@ public class BienController {
     private final BienService bienService;
     private final CatBienService catBienService;
     private final ReservationService reservationService;
+    private final TarifService tarifService;
 
     @GetMapping
     @Operation(summary = "Liste tous les biens", description = "Récupère la liste paginée des biens visibles avec filtres optionnels")
@@ -161,5 +165,80 @@ public class BienController {
                 .map(ReservationDTO::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(reservationDTOs);
+    }
+
+    // ========== CRUD GRILLE TARIFAIRE ==========
+
+    @GetMapping("/{id}/tarif")
+    @Operation(summary = "Récupère la grille tarifaire d'un bien", description = "Retourne la grille tarifaire avec les niveaux 1 à 5")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Grille tarifaire récupérée"),
+        @ApiResponse(responseCode = "404", description = "Grille tarifaire non trouvée")
+    })
+    public ResponseEntity<TarifDTO> getTarifByBien(@PathVariable @Parameter(description = "ID du bien") UUID id) {
+        bienService.findById(id); // Vérifie que le bien existe
+        try {
+            Tarif tarif = tarifService.findByBien(id);
+            return ResponseEntity.ok(TarifDTO.fromEntity(tarif));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/{id}/tarif")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Crée la grille tarifaire d'un bien", description = "Crée une nouvelle grille tarifaire pour un bien (ADMIN uniquement)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Grille tarifaire créée avec succès"),
+        @ApiResponse(responseCode = "400", description = "Grille tarifaire déjà existante"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé"),
+        @ApiResponse(responseCode = "404", description = "Bien non trouvé")
+    })
+    public ResponseEntity<TarifDTO> createTarif(@PathVariable @Parameter(description = "ID du bien") UUID id, 
+                                                 @Valid @RequestBody TarifDTO tarifDTO) {
+        try {
+            Tarif tarif = TarifDTO.toEntity(tarifDTO);
+            Tarif createdTarif = tarifService.create(id, tarif);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(TarifDTO.fromEntity(createdTarif));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/{id}/tarif")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Modifie la grille tarifaire d'un bien", description = "Met à jour la grille tarifaire existante (ADMIN uniquement)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Grille tarifaire mise à jour"),
+        @ApiResponse(responseCode = "404", description = "Grille tarifaire non trouvée"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
+    public ResponseEntity<TarifDTO> updateTarif(@PathVariable @Parameter(description = "ID du bien") UUID id, 
+                                                 @Valid @RequestBody TarifDTO tarifDTO) {
+        try {
+            Tarif tarif = TarifDTO.toEntity(tarifDTO);
+            Tarif updatedTarif = tarifService.update(id, tarif);
+            return ResponseEntity.ok(TarifDTO.fromEntity(updatedTarif));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}/tarif")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Supprime la grille tarifaire d'un bien", description = "Supprime la grille tarifaire d'un bien (ADMIN uniquement)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Grille tarifaire supprimée"),
+        @ApiResponse(responseCode = "404", description = "Grille tarifaire non trouvée"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé")
+    })
+    public ResponseEntity<Void> deleteTarif(@PathVariable @Parameter(description = "ID du bien") UUID id) {
+        try {
+            tarifService.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
