@@ -24,13 +24,59 @@ API REST pour la gestion des réservations de biens municipaux, des utilisateurs
 
 ## Configuration
 
-### Variables d'environnement / GitHub Secrets
+### Variables d'environnement
 
-Les secrets suivants doivent être configurés dans GitHub Secrets pour le pipeline CI :
+**⚠️ IMPORTANT : Aucun secret ne doit être commité en clair dans le repository.**
 
-- `JWT_SECRET` : Clé secrète pour la génération des tokens JWT
-- `SMTP_USERNAME` : Nom d'utilisateur SMTP pour l'envoi d'emails
-- `SMTP_PASSWORD` : Mot de passe SMTP pour l'envoi d'emails
+Toutes les variables sensibles sont externalisées via des variables d'environnement. Un fichier `.env.example` est fourni à la racine du projet avec toutes les variables nécessaires.
+
+#### Configuration locale
+
+1. Copier le fichier `.env.example` vers `.env` :
+```bash
+cp .env.example .env
+```
+
+2. Éditer le fichier `.env` avec vos valeurs :
+```bash
+nano .env
+```
+
+3. Le fichier `.env` est automatiquement ignoré par Git (voir `.gitignore`)
+
+#### Variables requises
+
+##### JWT (Obligatoires)
+- `JWT_SECRET` : Clé secrète pour la génération et validation des tokens JWT (min 256 bits)
+- `JWT_EXPIRATION` : Durée de validité du token en secondes (défaut: 86400 = 24h)
+- `JWT_REFRESH_EXPIRATION` : Durée de validité du refresh token en secondes (défaut: 604800 = 7 jours)
+
+##### Base de données PostgreSQL
+- `DATABASE_URL` : URL de connexion JDBC (défaut: jdbc:postgresql://localhost:5432/mairie_db)
+- `DATABASE_USERNAME` : Nom d'utilisateur PostgreSQL (défaut: postgres)
+- `DATABASE_PASSWORD` : Mot de passe PostgreSQL (défaut: postgres)
+- `JPA_DDL_AUTO` : Stratégie de gestion du schéma (défaut: update)
+- `JPA_SHOW_SQL` : Afficher les requêtes SQL dans les logs (défaut: false)
+
+##### Upload de fichiers
+- `UPLOAD_DIRECTORY` : Répertoire de stockage des fichiers (défaut: temp-uploads)
+- `UPLOAD_MAX_SIZE` : Taille maximale en octets (défaut: 10485760 = 10MB)
+
+##### SMTP (Obligatoires pour l'envoi d'emails)
+- `SMTP_HOST` : Serveur SMTP (défaut: smtp.gmail.com)
+- `SMTP_PORT` : Port SMTP (défaut: 587)
+- `SMTP_USERNAME` : Nom d'utilisateur SMTP (généralement l'adresse email)
+- `SMTP_PASSWORD` : Mot de passe SMTP ou mot de passe d'application
+- `SMTP_AUTH` : Activer l'authentification SMTP (défaut: true)
+- `SMTP_STARTTLS` : Activer STARTTLS (défaut: true)
+- `MAIL_SECRETARIAT` : Adresse email du secrétariat (défaut: secretariat@mairie.fr)
+
+#### GitHub Secrets (CI/CD)
+
+Pour le pipeline CI, configurer les secrets suivants dans GitHub Actions :
+- `JWT_SECRET`
+- `SMTP_USERNAME`
+- `SMTP_PASSWORD`
 
 ### Base de données
 
@@ -38,14 +84,6 @@ Créer une base de données PostgreSQL :
 
 ```sql
 CREATE DATABASE mairie_db;
-```
-
-Configurer les propriétés dans `application.properties` :
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/mairie_db
-spring.datasource.username=postgres
-spring.datasource.password=postgres
 ```
 
 ## Installation et démarrage
