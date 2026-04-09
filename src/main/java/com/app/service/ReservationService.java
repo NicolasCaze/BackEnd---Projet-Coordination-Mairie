@@ -29,6 +29,10 @@ public class ReservationService {
     public Page<Reservation> findAll(Pageable pageable) {
         return reservationRepository.findAll(pageable);
     }
+
+    public Page<Reservation> findByStatut(Reservation.Statut statut, Pageable pageable) {
+        return reservationRepository.findByStatut(statut, pageable);
+    }
     
     public List<Reservation> findAll() {
         return reservationRepository.findAll();
@@ -72,7 +76,7 @@ public class ReservationService {
     public Reservation create(Reservation reservation) {
         // Vérifications de base
         userService.findById(reservation.getUser().getId_user());
-        bienService.findById(reservation.getBien().getId_bien());
+        var bien = bienService.findById(reservation.getBien().getId_bien());
 
         if (reservation.getDate_debut().isAfter(reservation.getDate_fin())) {
             throw new RuntimeException("La date de début doit être avant la date de fin");
@@ -89,6 +93,10 @@ public class ReservationService {
             throw new ReservationConflictException("Conflit de créneau : ce bien est déjà réservé pour cette période");
         }
 
+        // Calcul automatique du prix en fonction du niveau tarifaire
+        Double prix = calculerPrix(reservation, bien);
+        reservation.setPrix(prix);
+
         reservation.setStatut(Reservation.Statut.EN_ATTENTE);
         reservation.setStatut_caution(Reservation.StatutCaution.NON_REQUISE);
         
@@ -102,6 +110,45 @@ public class ReservationService {
         reservation.setEst_valide(false);
         
         return reservationRepository.save(reservation);
+    }
+    
+    /**
+     * Calcule le prix de la réservation en fonction du niveau tarifaire
+     * @param reservation La réservation
+     * @param bien Le bien réservé
+     * @return Le prix calculé
+     */
+    private Double calculerPrix(Reservation reservation, com.app.entity.Bien bien) {
+        if (bien.getTarif() == null) {
+            return 0.0; // Pas de tarif défini = gratuit
+        }
+        
+        Integer niveauTarif;
+        
+        // Déterminer le niveau tarifaire applicable
+        if (reservation.getGroupe() != null) {
+            // Réservation pour un groupe : utiliser le niveau du groupe
+            niveauTarif = reservation.getGroupe().getNiveau_tarif();
+        } else {
+            // Réservation individuelle : utiliser le niveau de l'utilisateur
+            niveauTarif = reservation.getUser().getNiveau_tarif();
+        }
+        
+        // Si aucun niveau n'est défini, utiliser le niveau 1 par défaut
+        if (niveauTarif == null) {
+            niveauTarif = 1;
+        }
+        
+        // Récupérer le prix correspondant au niveau
+        var tarif = bien.getTarif();
+        return switch (niveauTarif) {
+            case 1 -> tarif.getNiveau_1();
+            case 2 -> tarif.getNiveau_2();
+            case 3 -> tarif.getNiveau_3();
+            case 4 -> tarif.getNiveau_4();
+            case 5 -> tarif.getNiveau_5();
+            default -> tarif.getNiveau_1(); // Par défaut, niveau 1
+        };
     }
 
     public Reservation update(UUID id, Reservation updated) {

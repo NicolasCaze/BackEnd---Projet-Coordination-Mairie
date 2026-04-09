@@ -25,6 +25,7 @@ public class User {
 
     private String mot_de_passe;
     private String telephone;
+    private String adresse;
     private Boolean is_resident;
     private Boolean is_tutored;
     private Integer niveau_tarif;
@@ -44,7 +45,7 @@ public class User {
     }
 
     public enum Role {
-        ADMIN, USER, MODERATEUR, TUTORED, SECRETARY
+        SUPER_ADMIN, ADMIN, USER, MODERATEUR, TUTORED, SECRETARY
     }
 
     public enum Statut {

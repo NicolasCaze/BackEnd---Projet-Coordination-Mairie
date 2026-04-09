@@ -106,6 +106,12 @@ public class BienController {
                 .catBien(catBien)
                 .build();
         
+        // Créer le tarif si fourni
+        if (bienDTO.getTarif() != null) {
+            Tarif tarif = TarifDTO.toEntity(bienDTO.getTarif());
+            bien.setTarif(tarif);
+        }
+        
         Bien createdBien = bienService.create(bien);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(BienDTO.fromEntity(createdBien));
@@ -131,6 +137,12 @@ public class BienController {
                 .estVisible(bienDTO.getEstVisible())
                 .catBien(catBien)
                 .build();
+        
+        // Mettre à jour le tarif si fourni
+        if (bienDTO.getTarif() != null) {
+            Tarif tarif = TarifDTO.toEntity(bienDTO.getTarif());
+            bien.setTarif(tarif);
+        }
         
         Bien updatedBien = bienService.update(id, bien);
         return ResponseEntity.ok(BienDTO.fromEntity(updatedBien));

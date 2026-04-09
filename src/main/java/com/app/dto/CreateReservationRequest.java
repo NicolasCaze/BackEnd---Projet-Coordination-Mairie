@@ -31,4 +31,8 @@ public class CreateReservationRequest {
     @NotNull(message = "La date de fin est obligatoire")
     @Future(message = "La date de fin doit être dans le futur")
     private LocalDateTime dateFin;
+    
+    private String motif;
+    
+    private Integer nombrePersonnes;
 }

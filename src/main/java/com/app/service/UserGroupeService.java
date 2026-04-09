@@ -38,6 +38,10 @@ public class UserGroupeService {
     }
 
     public UserGroupe addMembre(UUID id_groupe, UUID id_user) {
+        return addMembreWithRole(id_groupe, id_user, UserGroupe.RoleGroupe.MEMBRE);
+    }
+
+    public UserGroupe addMembreWithRole(UUID id_groupe, UUID id_user, UserGroupe.RoleGroupe roleGroupe) {
         userService.findById(id_user);
         groupeService.findById(id_groupe);
 
@@ -51,6 +55,7 @@ public class UserGroupeService {
                 .user(userService.findById(id_user))
                 .groupe(groupeService.findById(id_groupe))
                 .status(UserGroupe.Status.ACTIF)
+                .roleGroupe(roleGroupe)
                 .build();
         return userGroupeRepository.save(userGroupe);
     }
@@ -76,5 +81,10 @@ public class UserGroupeService {
         return userGroupeRepository.findById(compositeId)
                 .map(userGroupe -> userGroupe.getStatus() == UserGroupe.Status.ACTIF)
                 .orElse(false);
+    }
+    
+    public boolean isUserMember(UUID id_user, UUID id_groupe) {
+        UserGroupeId compositeId = new UserGroupeId(id_user, id_groupe);
+        return userGroupeRepository.existsById(compositeId);
     }
 }

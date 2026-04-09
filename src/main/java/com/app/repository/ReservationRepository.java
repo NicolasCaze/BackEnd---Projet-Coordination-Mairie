@@ -17,17 +17,23 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
 
     Page<Reservation> findAll(Pageable pageable);
     
-    Page<Reservation> findByUserIdUser(UUID id_user, Pageable pageable);
+    @Query("SELECT r FROM Reservation r WHERE r.user.id_user = :idUser")
+    Page<Reservation> findByUserIdUser(@Param("idUser") UUID id_user, Pageable pageable);
     
-    Page<Reservation> findByGroupeIdGroupe(UUID id_groupe, Pageable pageable);
+    @Query("SELECT r FROM Reservation r WHERE r.groupe.id_groupe = :idGroupe")
+    Page<Reservation> findByGroupeIdGroupe(@Param("idGroupe") UUID id_groupe, Pageable pageable);
     
-    Page<Reservation> findByBienIdBien(UUID id_bien, Pageable pageable);
+    @Query("SELECT r FROM Reservation r WHERE r.bien.id_bien = :idBien")
+    Page<Reservation> findByBienIdBien(@Param("idBien") UUID id_bien, Pageable pageable);
 
-    List<Reservation> findByUserIdUser(UUID id_user);
+    @Query("SELECT r FROM Reservation r WHERE r.user.id_user = :idUser")
+    List<Reservation> findByUserIdUser(@Param("idUser") UUID id_user);
     
-    List<Reservation> findByGroupeIdGroupe(UUID id_groupe);
+    @Query("SELECT r FROM Reservation r WHERE r.groupe.id_groupe = :idGroupe")
+    List<Reservation> findByGroupeIdGroupe(@Param("idGroupe") UUID id_groupe);
     
-    List<Reservation> findByBienIdBien(UUID id_bien);
+    @Query("SELECT r FROM Reservation r WHERE r.bien.id_bien = :idBien")
+    List<Reservation> findByBienIdBien(@Param("idBien") UUID id_bien);
 
     @Query("SELECT r FROM Reservation r WHERE r.bien.id_bien = :bienId " +
            "AND r.statut IN ('CONFIRMEE', 'EN_ATTENTE') " +
@@ -53,4 +59,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
            "AND r.statut IN ('CONFIRMEE', 'EN_ATTENTE') " +
            "ORDER BY r.date_debut ASC")
     List<Reservation> findActiveReservationsByBien(@Param("bienId") UUID bienId);
+
+    Page<Reservation> findByStatut(Reservation.Statut statut, Pageable pageable);
 }

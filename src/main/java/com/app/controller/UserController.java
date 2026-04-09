@@ -80,6 +80,19 @@ public class UserController {
                 .body(UserDTO.fromEntity(createdUser));
     }
 
+    @PutMapping("/profile")
+    @Operation(summary = "Mettre à jour son profil", description = "Permet à l'utilisateur connecté de mettre à jour ses informations personnelles")
+    public ResponseEntity<UserDTO> updateProfile(
+            @Valid @RequestBody UserDTO userDTO,
+            Authentication authentication) {
+        String email = authentication.getName();
+        User currentUser = userService.findByEmail(email);
+        
+        // Mettre à jour uniquement les champs autorisés (pas le role ni le statut)
+        User updatedUser = userService.updateProfile(currentUser.getId_user(), userDTO);
+        return ResponseEntity.ok(UserDTO.fromEntity(updatedUser));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(
             @PathVariable UUID id, 
@@ -118,12 +131,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id, Authentication authentication) {
-        delegationPermissionService.checkPermissionOrDelegatedPermission(
-            authentication, 
-            Delegation.Permission.DELETE_USER,
-            "Vous n'avez pas la permission de supprimer un utilisateur"
-        );
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }

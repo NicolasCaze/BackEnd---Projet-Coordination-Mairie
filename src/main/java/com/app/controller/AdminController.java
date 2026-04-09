@@ -40,6 +40,7 @@ public class AdminController {
     private final DelegationService delegationService;
     private final ImpersonationService impersonationService;
     private final AuditLogService auditLogService;
+    private final com.app.service.UserService userService;
 
     @PostMapping("/delegations")
     @PreAuthorize("hasRole('ADMIN')")
@@ -88,6 +89,42 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/users/create")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Créer un utilisateur avec rôle", description = "Permet au SUPER_ADMIN de créer un utilisateur avec rôle USER ou ADMIN")
+    public ResponseEntity<User> createUserWithRole(@Valid @RequestBody CreateUserRequest request) {
+        User user = User.builder()
+                .nom(request.getNom())
+                .prenom(request.getPrenom())
+                .email(request.getEmail())
+                .mot_de_passe(request.getPassword())
+                .role(User.Role.valueOf(request.getRole()))
+                .statut(User.Statut.ACTIF)
+                .build();
+        
+        User createdUser = userService.create(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    }
+
+    public static class CreateUserRequest {
+        private String nom;
+        private String prenom;
+        private String email;
+        private String password;
+        private String role;
+
+        public String getNom() { return nom; }
+        public void setNom(String nom) { this.nom = nom; }
+        public String getPrenom() { return prenom; }
+        public void setPrenom(String prenom) { this.prenom = prenom; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+        public String getRole() { return role; }
+        public void setRole(String role) { this.role = role; }
+    }
+
     @PostMapping("/impersonate/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Impersonate un utilisateur", description = "Permet à un admin de se connecter en tant qu'un autre utilisateur (ADMIN uniquement)")
@@ -132,7 +169,7 @@ public class AdminController {
     }
 
     @GetMapping("/audit-logs")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     @Operation(summary = "Consulte les logs d'audit", description = "Récupère les logs d'audit avec filtres optionnels (ADMIN uniquement)")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Logs d'audit récupérés"),
@@ -150,5 +187,34 @@ public class AdminController {
                 actorId, targetUserId, action, dateFrom, dateTo, pageable);
         
         return ResponseEntity.ok(PagedResponse.of(auditLogPage));
+    }
+
+    @PostMapping("/users/{userId}/promote-to-admin")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Promouvoir un utilisateur en ADMIN", description = "Permet au SUPER_ADMIN de promouvoir un utilisateur en ADMIN")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Utilisateur promu avec succès"),
+        @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé"),
+        @ApiResponse(responseCode = "403", description = "Accès refusé - SUPER_ADMIN uniquement")
+    })
+    public ResponseEntity<Map<String, String>> promoteToAdmin(
+            @PathVariable UUID userId,
+            Authentication authentication) {
+        
+        User targetUser = userService.findById(userId);
+        
+        if (targetUser.getRole() == User.Role.ADMIN || targetUser.getRole() == User.Role.SUPER_ADMIN) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "L'utilisateur est déjà administrateur"));
+        }
+        
+        targetUser.setRole(User.Role.ADMIN);
+        userService.update(userId, targetUser);
+        
+        return ResponseEntity.ok(Map.of(
+                "message", "Utilisateur promu en ADMIN avec succès",
+                "userId", userId.toString(),
+                "newRole", "ADMIN"
+        ));
     }
 }

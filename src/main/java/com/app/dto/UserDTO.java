@@ -20,6 +20,7 @@ public class UserDTO {
     private String email;
     private String mot_de_passe;
     private String telephone;
+    private String adresse;
     private Boolean is_resident;
     private Boolean is_tutored;
     private Integer niveau_tarif;
@@ -33,6 +34,7 @@ public class UserDTO {
                 .prenom(user.getPrenom())
                 .email(user.getEmail())
                 .telephone(user.getTelephone())
+                .adresse(user.getAdresse())
                 .is_resident(user.getIs_resident())
                 .is_tutored(user.getIs_tutored())
                 .niveau_tarif(user.getNiveau_tarif())

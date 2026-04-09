@@ -3,8 +3,12 @@ package com.app.controller;
 import com.app.dto.AuthRequest;
 import com.app.dto.AuthResponse;
 import com.app.dto.RegisterRequest;
+import com.app.dto.UserDTO;
+import com.app.entity.User;
 import com.app.exception.AuthenticationException;
 import com.app.service.AuthService;
+import com.app.service.UserService;
+import com.app.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,6 +27,8 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
     @Operation(summary = "Connexion utilisateur", description = "Authentifie un utilisateur et retourne un token JWT")
@@ -62,13 +68,18 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Void> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
+            if (authHeader == null || authHeader.isEmpty() || authHeader.equals("Bearer null") || authHeader.equals("Bearer undefined")) {
+                return ResponseEntity.ok().build();
+            }
             String token = authHeader.replace("Bearer ", "");
-            authService.logout(token);
+            if (token != null && !token.isEmpty() && !token.equals("null") && !token.equals("undefined")) {
+                authService.logout(token);
+            }
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.ok().build();
         }
     }
 
@@ -79,6 +90,38 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).build();
+        }
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Récupérer l'utilisateur connecté", description = "Retourne les informations de l'utilisateur actuellement connecté")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Utilisateur récupéré avec succès"),
+        @ApiResponse(responseCode = "401", description = "Non authentifié")
+    })
+    public ResponseEntity<UserDTO> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            
+            // Vérifier si le token est blacklisté
+            if (authService.isTokenBlacklisted(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            // Extraire l'email du token
+            String email = jwtUtil.extractUsername(token);
+            
+            // Récupérer l'utilisateur
+            User user = userService.findByEmail(email);
+            
+            // Vérifier que l'utilisateur est actif
+            if (user.getStatut() != User.Statut.ACTIF) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            return ResponseEntity.ok(UserDTO.fromEntity(user));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }

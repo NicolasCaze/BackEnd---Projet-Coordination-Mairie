@@ -1,169 +1,92 @@
-# BackEnd - Projet Coordination Mairie
+# Mailpit - email testing for developers
 
-[![CI Pipeline](https://github.com/NicolasCaze/BackEnd---Projet-Coordination-Mairie/actions/workflows/ci.yml/badge.svg)](https://github.com/NicolasCaze/BackEnd---Projet-Coordination-Mairie/actions/workflows/ci.yml)
+![Tests](https://github.com/axllent/mailpit/actions/workflows/tests.yml/badge.svg)
+![Build status](https://github.com/axllent/mailpit/actions/workflows/release-build.yml/badge.svg)
+![Docker builds](https://github.com/axllent/mailpit/actions/workflows/build-docker.yml/badge.svg)
+![CodeQL](https://github.com/axllent/mailpit/actions/workflows/codeql-analysis.yml/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/axllent/mailpit)](https://goreportcard.com/report/github.com/axllent/mailpit)
 
-## Description
+Mailpit is a small, fast, low memory, zero-dependency, multi-platform email testing tool & API for developers.
 
-API REST pour la gestion des réservations de biens municipaux, des utilisateurs, des groupes et des pièces justificatives. Système de coordination pour la mairie.
+It acts as an SMTP server, provides a modern web interface to view & test captured emails, and contains an API for automated integration testing.
 
-## Technologies
+Mailpit was originally **inspired** by MailHog which is now [no longer maintained](https://github.com/mailhog/MailHog/issues/442#issuecomment-1493415258) and hasn't seen active development for a few years now.
 
-- Java 17
-- Spring Boot 3.x
-- Spring Security (JWT)
-- Spring Data JPA
-- PostgreSQL
-- Springdoc OpenAPI
-- Maven
+![Mailpit](https://raw.githubusercontent.com/axllent/mailpit/develop/docs/screenshot.png)
 
-## Prérequis
 
-- JDK 17+
-- Maven 3.6+
-- PostgreSQL 15+
+## Features
 
-## Configuration
+- Runs entirely from a single binary, no installation required
+- SMTP server (default `0.0.0.0:1025`)
+- Web UI to view emails (formatted HTML, highlighted HTML source, text, headers, raw source and MIME attachments including image thumbnails)
+- HTML check to test & score mail client compatibility with HTML emails
+- Link check to test message links (HTML & text) & linked images
+- Screenshots of HTML messages via web UI ([see wiki](https://github.com/axllent/mailpit/wiki/HTML-screenshots))
+- Mobile and tablet HTML preview toggle in desktop mode
+- Light & dark web UI theme with auto-detect
+- Advanced mail search ([see wiki](https://github.com/axllent/mailpit/wiki/Mail-search))
+- Message tagging ([see wiki](https://github.com/axllent/mailpit/wiki/Tagging))
+- Real-time web UI updates using web sockets for new mail
+- Optional browser notifications for new mail (when accessed via either HTTPS or `localhost` only)
+- Configurable automatic email pruning (default keeps the most recent 500 emails)
+- Email storage either in a temporary or persistent database ([see wiki](https://github.com/axllent/mailpit/wiki/Email-storage))
+- Fast SMTP processing & storing - approximately 70-100 emails per second depending on CPU, network speed & email size, easily handling tens of thousands of emails
+- SMTP relaying / message release - relay messages via a different SMTP server including an optional allowlist of accepted recipients ([see wiki](https://github.com/axllent/mailpit/wiki/SMTP-relay))
+- Optional SMTP with STARTTLS & SMTP authentication, including an "accept anything" mode ([see wiki](https://github.com/axllent/mailpit/wiki/SMTP-with-STARTTLS-and-authentication))
+- Optional HTTPS for web UI ([see wiki](https://github.com/axllent/mailpit/wiki/HTTPS))
+- Optional basic authentication for web UI ([see wiki](https://github.com/axllent/mailpit/wiki/Basic-authentication))
+- A simple REST API ([see docs](docs/apiv1/README.md))
+- Multi-architecture [Docker images](https://github.com/axllent/mailpit/wiki/Docker-images)
 
-### Variables d'environnement
 
-**⚠️ IMPORTANT : Aucun secret ne doit être commité en clair dans le repository.**
+## Installation
 
-Toutes les variables sensibles sont externalisées via des variables d'environnement. Un fichier `.env.example` est fourni à la racine du projet avec toutes les variables nécessaires.
+The Mailpit web UI listens by default on `http://0.0.0.0:8025`, and the SMTP port on `0.0.0.0:1025`.
 
-#### Configuration locale
+Mailpit runs as a single binary and can be installed in different ways:
 
-1. Copier le fichier `.env.example` vers `.env` :
-```bash
-cp .env.example .env
-```
 
-2. Éditer le fichier `.env` avec vos valeurs :
-```bash
-nano .env
-```
+### Install via Brew (Mac)
 
-3. Le fichier `.env` est automatiquement ignoré par Git (voir `.gitignore`)
+Install Mailpit with `brew install mailpit`.
 
-#### Variables requises
 
-##### JWT (Obligatoires)
-- `JWT_SECRET` : Clé secrète pour la génération et validation des tokens JWT (min 256 bits)
-- `JWT_EXPIRATION` : Durée de validité du token en secondes (défaut: 86400 = 24h)
-- `JWT_REFRESH_EXPIRATION` : Durée de validité du refresh token en secondes (défaut: 604800 = 7 jours)
+### Install via bash script (Linux & Mac)
 
-##### Base de données PostgreSQL
-- `DATABASE_URL` : URL de connexion JDBC (défaut: jdbc:postgresql://localhost:5432/mairie_db)
-- `DATABASE_USERNAME` : Nom d'utilisateur PostgreSQL (défaut: postgres)
-- `DATABASE_PASSWORD` : Mot de passe PostgreSQL (défaut: postgres)
-- `JPA_DDL_AUTO` : Stratégie de gestion du schéma (défaut: update)
-- `JPA_SHOW_SQL` : Afficher les requêtes SQL dans les logs (défaut: false)
-
-##### Upload de fichiers
-- `UPLOAD_DIRECTORY` : Répertoire de stockage des fichiers (défaut: temp-uploads)
-- `UPLOAD_MAX_SIZE` : Taille maximale en octets (défaut: 10485760 = 10MB)
-
-##### SMTP (Obligatoires pour l'envoi d'emails)
-- `SMTP_HOST` : Serveur SMTP (défaut: smtp.gmail.com)
-- `SMTP_PORT` : Port SMTP (défaut: 587)
-- `SMTP_USERNAME` : Nom d'utilisateur SMTP (généralement l'adresse email)
-- `SMTP_PASSWORD` : Mot de passe SMTP ou mot de passe d'application
-- `SMTP_AUTH` : Activer l'authentification SMTP (défaut: true)
-- `SMTP_STARTTLS` : Activer STARTTLS (défaut: true)
-- `MAIL_SECRETARIAT` : Adresse email du secrétariat (défaut: secretariat@mairie.fr)
-
-#### GitHub Secrets (CI/CD)
-
-Pour le pipeline CI, configurer les secrets suivants dans GitHub Actions :
-- `JWT_SECRET`
-- `SMTP_USERNAME`
-- `SMTP_PASSWORD`
-
-### Base de données
-
-Créer une base de données PostgreSQL :
-
-```sql
-CREATE DATABASE mairie_db;
-```
-
-## Installation et démarrage
+Linux & Mac users can install it directly to `/usr/local/bin/mailpit` with:
 
 ```bash
-# Cloner le repository
-git clone https://github.com/NicolasCaze/BackEnd---Projet-Coordination-Mairie.git
-cd BackEnd---Projet-Coordination-Mairie
-
-# Compiler le projet
-mvn clean install
-
-# Lancer l'application
-mvn spring-boot:run
+sudo bash < <(curl -sL https://raw.githubusercontent.com/axllent/mailpit/develop/install.sh)
 ```
 
-## Tests
 
-```bash
-# Exécuter les tests
-mvn test
+### Download static binary (Windows, Linux and Mac)
 
-# Exécuter les tests avec vérification
-mvn verify
-```
+Static binaries can always be found on the [releases](https://github.com/axllent/mailpit/releases/latest). The `mailpit` binary can extracted and copied to your `$PATH`, or simply run as `./mailpit`.
 
-## Documentation API
 
-Une fois l'application démarrée, la documentation Swagger UI est accessible à :
+### Docker
 
-- **Swagger UI** : http://localhost:8080/swagger-ui.html
-- **API Docs JSON** : http://localhost:8080/v3/api-docs
-- **API Docs YAML** : http://localhost:8080/v3/api-docs.yaml
+See [Docker instructions](https://github.com/axllent/mailpit/wiki/Docker-images) for 386, amd64 & arm64 images.
 
-Le fichier `openapi.yaml` versionné est disponible à la racine du projet.
 
-## Pipeline CI/CD
+### Compile from source
 
-Le projet utilise GitHub Actions pour l'intégration continue :
+To build Mailpit from source see [building from source](https://github.com/axllent/mailpit/wiki/Building-from-source).
 
-- **Déclenchement** : Sur chaque Pull Request vers `main` et push sur `main`
-- **Étapes** :
-  1. Checkout du code
-  2. Configuration JDK 17
-  3. Démarrage PostgreSQL (service)
-  4. Exécution des tests (`mvn test`)
-  5. Vérification du build (`mvn verify`)
-  6. Upload des rapports de tests et de couverture
 
-**Un build rouge bloque le merge de la PR.**
+## Usage
 
-## Structure du projet
+Run `mailpit -h` to see options. More information can be seen in [the docs](https://github.com/axllent/mailpit/wiki/Runtime-options).
 
-```
-src/
-├── main/
-│   ├── java/com/app/
-│   │   ├── annotation/      # Annotations personnalisées (@Audited)
-│   │   ├── aspect/          # Aspects AOP (audit logging)
-│   │   ├── config/          # Configuration (Security, OpenAPI, etc.)
-│   │   ├── controller/      # Contrôleurs REST
-│   │   ├── dto/             # Data Transfer Objects
-│   │   ├── entity/          # Entités JPA
-│   │   ├── exception/       # Exceptions personnalisées
-│   │   ├── repository/      # Repositories JPA
-│   │   ├── service/         # Services métier
-│   │   └── util/            # Utilitaires (JWT, etc.)
-│   └── resources/
-│       └── application.properties
-└── test/
-    └── java/com/app/        # Tests unitaires et d'intégration
-```
 
-## Endpoints principaux
 
-- `/auth/login` - Authentification
-- `/auth/register` - Inscription
-- `/users` - Gestion des utilisateurs
-- `/biens` - Gestion des biens municipaux
-- `/groupes` - Gestion des groupes
-- `/reservations` - Gestion des réservations
-- `/admin` - Administration (délégations, impersonation, audit logs)
-- `/api/upload` - Upload de pièces justificatives
+### Testing Mailpit
+
+Please refer to [the documentation](https://github.com/axllent/mailpit/wiki/Testing-Mailpit) of how to easily test email delivery to Mailpit.
+
+
+### Configuring sendmail
+
+Mailpit's SMTP server (by default on port 1025), so you will likely need to configure your sending application to deliver mail via that port. A common MTA (Mail Transfer Agent) that delivers system emails to a SMTP server is `sendmail`, used by many applications including PHP. Mailpit can also act as substitute for sendmail. For instructions of how to set this up, please refer to the [sendmail documentation](https://github.com/axllent/mailpit/wiki/Configuring-sendmail).

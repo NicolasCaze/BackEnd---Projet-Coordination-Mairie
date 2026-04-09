@@ -33,6 +33,9 @@ public class Groupe {
     private Boolean est_paye;
     private Integer niveau_tarif;
 
+    @Column(name = "code_invitation", unique = true)
+    private String codeInvitation;
+
     @Column(name = "creer_le", updatable = false)
     private LocalDateTime creer_le;
 
@@ -42,7 +45,7 @@ public class Groupe {
     }
 
     public enum TypeGroupe {
-        ASSOCIATION, CONSEIL_MUNICIPAL, ENTREPRISE, PARTICULIER
+        ASSOCIATION, VILLAGE, HORS_VILLAGE, CONSEIL_MUNICIPAL
     }
 
     public enum TypeExoneration {

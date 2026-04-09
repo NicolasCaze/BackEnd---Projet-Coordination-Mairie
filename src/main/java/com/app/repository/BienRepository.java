@@ -35,5 +35,6 @@ public interface BienRepository extends JpaRepository<Bien, UUID> {
 
     List<Bien> findByEstVisibleTrue();
     
-    List<Bien> findByCatBienId_cat_bien(UUID categoryId);
+    @Query("SELECT b FROM Bien b WHERE b.catBien.id_cat_bien = :categoryId")
+    List<Bien> findByCatBienIdCatBien(@Param("categoryId") UUID categoryId);
 }

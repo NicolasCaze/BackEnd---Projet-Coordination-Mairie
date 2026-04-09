@@ -32,10 +32,18 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User non trouvé : " + id));
     }
+    
+    public List<User> findByRole(User.Role role) {
+        return userRepository.findByRole(role);
+    }
 
     public User create(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Email déjà utilisé : " + user.getEmail());
+        }
+        // Hasher le mot de passe avant de sauvegarder
+        if (user.getMot_de_passe() != null && !user.getMot_de_passe().isEmpty()) {
+            user.setMot_de_passe(passwordEncoder.encode(user.getMot_de_passe()));
         }
         return userRepository.save(user);
     }
@@ -124,6 +132,21 @@ public class UserService {
         }
         
         user.setStatut(newStatut);
+        return userRepository.save(user);
+    }
+
+    public User updateProfile(UUID id, com.app.dto.UserDTO userDTO) {
+        User user = findById(id);
+        
+        // Mettre à jour uniquement les informations personnelles (pas role ni statut)
+        user.setNom(userDTO.getNom());
+        user.setPrenom(userDTO.getPrenom());
+        user.setTelephone(userDTO.getTelephone());
+        user.setAdresse(userDTO.getAdresse());
+        
+        // Ne pas permettre de changer l'email pour éviter les conflits
+        // Ne pas permettre de changer le role ou le statut
+        
         return userRepository.save(user);
     }
 }

@@ -50,7 +50,7 @@ public class AuthService {
             
             // Construire la réponse
             return AuthResponse.builder()
-                    .token(token)
+                    .accessToken(token)
                     .refreshToken(refreshToken)
                     .expiresIn(jwtUtil.getExpiration())
                     .user(UserDTO.fromEntity(user))
@@ -84,7 +84,7 @@ public class AuthService {
             String newRefreshToken = jwtUtil.generateRefreshToken(email);
             
             return AuthResponse.builder()
-                    .token(newToken)
+                    .accessToken(newToken)
                     .refreshToken(newRefreshToken)
                     .expiresIn(jwtUtil.getExpiration())
                     .user(UserDTO.fromEntity(user))
@@ -124,7 +124,7 @@ public class AuthService {
             String refreshToken = jwtUtil.generateRefreshToken(savedUser.getEmail());
             
             return AuthResponse.builder()
-                    .token(token)
+                    .accessToken(token)
                     .refreshToken(refreshToken)
                     .expiresIn(jwtUtil.getExpiration())
                     .user(UserDTO.fromEntity(savedUser))

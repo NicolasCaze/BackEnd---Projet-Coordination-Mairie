@@ -23,6 +23,7 @@ public class ReservationDTO {
     private LocalDateTime date_fin;
     private Reservation.Statut statut;
     private Reservation.StatutCaution statut_caution;
+    private Double prix;
     private LocalDateTime created_at;
     
     public static ReservationDTO fromEntity(Reservation reservation) {
@@ -35,6 +36,7 @@ public class ReservationDTO {
                 .date_fin(reservation.getDate_fin())
                 .statut(reservation.getStatut())
                 .statut_caution(reservation.getStatut_caution())
+                .prix(reservation.getPrix())
                 .created_at(reservation.getCreated_at())
                 .build();
     }

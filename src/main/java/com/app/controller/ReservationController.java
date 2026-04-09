@@ -14,6 +14,7 @@ import com.app.entity.User;
 import com.app.service.AuthService;
 import com.app.service.BienService;
 import com.app.service.DelegationPermissionService;
+import com.app.service.EmailService;
 import com.app.service.GroupeService;
 import com.app.service.ReservationService;
 import com.app.service.UserGroupeService;
@@ -47,16 +48,19 @@ public class ReservationController {
     private final BienService bienService;
     private final UserGroupeService userGroupeService;
     private final DelegationPermissionService delegationPermissionService;
+    private final EmailService emailService;
     
     public ReservationController(ReservationService reservationService, UserService userService, 
                            GroupeService groupeService, BienService bienService, 
-                           UserGroupeService userGroupeService, DelegationPermissionService delegationPermissionService) {
+                           UserGroupeService userGroupeService, DelegationPermissionService delegationPermissionService,
+                           EmailService emailService) {
         this.reservationService = reservationService;
         this.userService = userService;
         this.groupeService = groupeService;
         this.bienService = bienService;
         this.userGroupeService = userGroupeService;
         this.delegationPermissionService = delegationPermissionService;
+        this.emailService = emailService;
     }
 
     @PostMapping
@@ -82,9 +86,24 @@ public class ReservationController {
                 .groupe(groupe)
                 .date_debut(request.getDateDebut())
                 .date_fin(request.getDateFin())
+                .motif(request.getMotif())
+                .nombrePersonnes(request.getNombrePersonnes())
                 .build();
 
         Reservation createdReservation = reservationService.create(reservation);
+        
+        // Envoyer un email au SUPER_ADMIN
+        try {
+            List<User> superAdmins = userService.findByRole(User.Role.SUPER_ADMIN);
+            if (!superAdmins.isEmpty()) {
+                User superAdmin = superAdmins.get(0);
+                emailService.sendReservationNotificationToSuperAdmin(createdReservation, superAdmin.getEmail());
+            }
+        } catch (Exception e) {
+            // Log l'erreur mais ne pas bloquer la création de la réservation
+            System.err.println("Erreur lors de l'envoi de l'email: " + e.getMessage());
+        }
+        
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ReservationDTO.fromEntity(createdReservation));
     }
@@ -153,6 +172,18 @@ public class ReservationController {
         return ResponseEntity.ok(PagedResponse.of(reservationDTOPage));
     }
 
+    @GetMapping("/my")
+    @Operation(summary = "Récupérer mes réservations", description = "Retourne toutes les réservations de l'utilisateur connecté")
+    public ResponseEntity<List<ReservationDTO>> getMyReservations(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userService.findByEmail(email);
+        List<Reservation> reservations = reservationService.findByUser(user.getId_user());
+        List<ReservationDTO> reservationDTOs = reservations.stream()
+                .map(ReservationDTO::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reservationDTOs);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
     public ResponseEntity<ReservationDTO> getReservationById(@PathVariable UUID id) {
@@ -161,9 +192,23 @@ public class ReservationController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATEUR')")
-    public ResponseEntity<PagedResponse<ReservationDTO>> getAllReservations(Pageable pageable) {
-        Page<Reservation> reservationPage = reservationService.findAll(pageable);
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('MODERATEUR')")
+    public ResponseEntity<PagedResponse<ReservationDTO>> getAllReservations(
+            @RequestParam(required = false) String statut,
+            Pageable pageable) {
+        Page<Reservation> reservationPage;
+        
+        if (statut != null && !statut.isEmpty()) {
+            try {
+                Reservation.Statut statutEnum = Reservation.Statut.valueOf(statut);
+                reservationPage = reservationService.findByStatut(statutEnum, pageable);
+            } catch (IllegalArgumentException e) {
+                reservationPage = reservationService.findAll(pageable);
+            }
+        } else {
+            reservationPage = reservationService.findAll(pageable);
+        }
+        
         Page<ReservationDTO> reservationDTOPage = reservationPage.map(ReservationDTO::fromEntity);
         return ResponseEntity.ok(PagedResponse.of(reservationDTOPage));
     }
@@ -177,5 +222,37 @@ public class ReservationController {
         );
         reservationService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/confirm")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('MODERATEUR')")
+    @Operation(summary = "Confirme une réservation", description = "Change le statut d'une réservation à CONFIRMEE")
+    public ResponseEntity<ReservationDTO> confirmReservation(@PathVariable UUID id) {
+        Reservation reservation = reservationService.findById(id);
+        reservation.setStatut(Reservation.Statut.CONFIRMEE);
+        Reservation updatedReservation = reservationService.update(id, reservation);
+        return ResponseEntity.ok(ReservationDTO.fromEntity(updatedReservation));
+    }
+
+    @PostMapping("/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('MODERATEUR')")
+    @Operation(summary = "Refuse une réservation", description = "Change le statut d'une réservation à ANNULEE")
+    public ResponseEntity<ReservationDTO> rejectReservation(
+            @PathVariable UUID id,
+            @RequestBody(required = false) RejectRequest request) {
+        Reservation reservation = reservationService.findById(id);
+        reservation.setStatut(Reservation.Statut.ANNULEE);
+        if (request != null && request.getReason() != null) {
+            reservation.setMotif(request.getReason());
+        }
+        Reservation updatedReservation = reservationService.update(id, reservation);
+        return ResponseEntity.ok(ReservationDTO.fromEntity(updatedReservation));
+    }
+
+    public static class RejectRequest {
+        private String reason;
+        
+        public String getReason() { return reason; }
+        public void setReason(String reason) { this.reason = reason; }
     }
 }

@@ -28,6 +28,10 @@ public class UserGroupe {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role_groupe")
+    private RoleGroupe roleGroupe;
+
     @Column(name = "rejoint_le", updatable = false)
     private LocalDateTime rejoint_le;
 
@@ -37,9 +41,16 @@ public class UserGroupe {
         if (this.status == null) {
             this.status = Status.ACTIF;
         }
+        if (this.roleGroupe == null) {
+            this.roleGroupe = RoleGroupe.MEMBRE;
+        }
     }
 
     public enum Status {
         ACTIF, INACTIF, SUSPENDU
+    }
+
+    public enum RoleGroupe {
+        ADMIN, MEMBRE
     }
 }

@@ -47,6 +47,13 @@ public class Reservation {
     private Boolean est_paye;
     private Boolean est_valide;
 
+    @Column(length = 500)
+    private String motif;
+
+    private Integer nombrePersonnes;
+    
+    private Double prix;
+
     @Column(updatable = false)
     private LocalDateTime created_at;
 

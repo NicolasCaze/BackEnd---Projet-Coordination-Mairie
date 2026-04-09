@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -22,6 +23,19 @@ public class GroupeDTO {
     private Groupe.TypeExoneration type_exoneration;
     private Integer niveau_tarif;
     private LocalDateTime creer_le;
+    private List<MembreInfo> membres;
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class MembreInfo {
+        private UUID id_user;
+        private String nom;
+        private String prenom;
+        private String email;
+        private String roleGroupe;
+    }
     
     public static GroupeDTO fromEntity(Groupe groupe) {
         return GroupeDTO.builder()

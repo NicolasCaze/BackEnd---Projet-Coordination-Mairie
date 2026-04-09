@@ -11,7 +11,7 @@ import lombok.Builder;
 @Builder
 public class AuthResponse {
     
-    private String token;
+    private String accessToken;
     private String refreshToken;
     private String type = "Bearer";
     private Long expiresIn;

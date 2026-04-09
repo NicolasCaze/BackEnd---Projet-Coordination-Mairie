@@ -12,4 +12,8 @@ import java.util.UUID;
 public interface GroupeRepository extends JpaRepository<Groupe, UUID> {
     
     Page<Groupe> findAll(Pageable pageable);
+    
+    boolean existsByCodeInvitation(String codeInvitation);
+    
+    Groupe findByCodeInvitation(String codeInvitation);
 }

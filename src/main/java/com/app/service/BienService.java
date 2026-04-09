@@ -1,6 +1,7 @@
 package com.app.service;
 
 import com.app.entity.Bien;
+import com.app.entity.Tarif;
 import com.app.repository.BienRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,6 +46,11 @@ public class BienService {
     }
 
     public Bien create(Bien bien) {
+        // Si un tarif est fourni, l'associer au bien
+        if (bien.getTarif() != null) {
+            Tarif tarif = bien.getTarif();
+            tarif.setBien(bien);
+        }
         return bienRepository.save(bien);
     }
 
@@ -54,6 +60,24 @@ public class BienService {
         bien.setDescription(updated.getDescription());
         bien.setEstVisible(updated.getEstVisible());
         bien.setCatBien(updated.getCatBien());
+        
+        // Mettre à jour le tarif si fourni
+        if (updated.getTarif() != null) {
+            if (bien.getTarif() != null) {
+                // Mettre à jour le tarif existant
+                bien.getTarif().setNiveau_1(updated.getTarif().getNiveau_1());
+                bien.getTarif().setNiveau_2(updated.getTarif().getNiveau_2());
+                bien.getTarif().setNiveau_3(updated.getTarif().getNiveau_3());
+                bien.getTarif().setNiveau_4(updated.getTarif().getNiveau_4());
+                bien.getTarif().setNiveau_5(updated.getTarif().getNiveau_5());
+            } else {
+                // Créer un nouveau tarif
+                Tarif tarif = updated.getTarif();
+                tarif.setBien(bien);
+                bien.setTarif(tarif);
+            }
+        }
+        
         return bienRepository.save(bien);
     }
 

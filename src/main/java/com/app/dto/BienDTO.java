@@ -22,6 +22,7 @@ public class BienDTO {
     private LocalDateTime creerLe;
     private UUID id_cat_bien;
     private String nom_cat_bien;
+    private TarifDTO tarif;
     
     public static BienDTO fromEntity(Bien bien) {
         return BienDTO.builder()
@@ -32,6 +33,7 @@ public class BienDTO {
                 .creerLe(bien.getCreerLe())
                 .id_cat_bien(bien.getCatBien() != null ? bien.getCatBien().getId_cat_bien() : null)
                 .nom_cat_bien(bien.getCatBien() != null ? bien.getCatBien().getNom() : null)
+                .tarif(bien.getTarif() != null ? TarifDTO.fromEntity(bien.getTarif()) : null)
                 .build();
     }
 }
